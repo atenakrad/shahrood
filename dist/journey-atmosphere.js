@@ -67,7 +67,7 @@ export function createJourneyAtmosphere({scene,renderer,sun,hemi,fill,daySky}){
   const dayFill=new THREE.Color(0xb8d3c4),nightFill=new THREE.Color(0x87a5e0);
   const dayHemi=new THREE.Color(0xffedcf),nightHemi=new THREE.Color(0x6787bb);
   const dayGround=new THREE.Color(0x62584c),nightGround=new THREE.Color(0x101a2d);
-  const nightFog=new THREE.Color(0x192943),nightTint=new THREE.Color(0x7387a6),tint=new THREE.Color();
+  const nightFog=new THREE.Color(0x192943),nightTint=new THREE.Color(0x8fa4bf),tint=new THREE.Color();
   const duskTint=new THREE.Color().setRGB(.80,.71,.61),duskSkyTint=new THREE.Color(0xe8c3a2);
   // Photographic plants and wildlife use unlit materials. Dim only those maps,
   // keeping exhibit photos, labels and luminous fixtures readable at night.
@@ -81,11 +81,11 @@ export function createJourneyAtmosphere({scene,renderer,sun,hemi,fill,daySky}){
   function update(progress,dayFog){
     const night=nightAmountForProgress(progress);
     skyMaterial.uniforms.nightMix.value=night;
-    sun.intensity=THREE.MathUtils.lerp(1.1,.035,night);sun.color.copy(daySun).lerp(nightSun,night);
-    hemi.intensity=THREE.MathUtils.lerp(.65,.20,night);hemi.color.copy(dayHemi).lerp(nightHemi,night);
+    sun.intensity=THREE.MathUtils.lerp(1.2,.10,night);sun.color.copy(daySun).lerp(nightSun,night);
+    hemi.intensity=THREE.MathUtils.lerp(.82,.50,night);hemi.color.copy(dayHemi).lerp(nightHemi,night);
     hemi.groundColor.copy(dayGround).lerp(nightGround,night);
-    fill.intensity=.32;fill.color.copy(dayFill).lerp(nightFill,night);
-    renderer.toneMappingExposure=THREE.MathUtils.lerp(1.0,1.12,night);
+    fill.intensity=THREE.MathUtils.lerp(.42,.60,night);fill.color.copy(dayFill).lerp(nightFill,night);
+    renderer.toneMappingExposure=THREE.MathUtils.lerp(1.03,1.18,night);
     scene.fog.color.copy(dayFog).multiply(duskSkyTint).lerp(nightFog,night);
     scene.fog.near=THREE.MathUtils.lerp(90,75,night);scene.fog.far=THREE.MathUtils.lerp(255,225,night);
     tint.copy(duskTint).lerp(nightTint,night);

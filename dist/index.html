@@ -1,22 +1,47 @@
 <!doctype html>
-<html lang="fa" dir="rtl">
+<html lang="fa" dir="rtl" class="site-loading">
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#101b1a"><meta name="description" content="سفری تعاملی در چشم‌انداز شهر هوشمند شاهرود؛ کشف خدمات، طبیعت، گردشگری و اقتصاد محلی در یک تجربه سه‌بعدی.">
+  <style>
+    html.site-loading { overflow: hidden; }
+    #site-preloader { position: fixed; inset: 0; z-index: 2147483647; display: grid; place-items: center; background: #101b1a; color: #efd59b; text-align: center; opacity: 1; transition: opacity .45s ease; }
+    #site-preloader.is-leaving { opacity: 0; pointer-events: none; }
+    .preloader-content { display: grid; justify-items: center; gap: 30px; padding: 32px; }
+    .preloader-mark { width: clamp(180px, 30vw, 250px); height: auto; display: block; }
+    #site-preloader p { margin: 0; font-family: Vazir, Tahoma, sans-serif; font-size: clamp(24px, 4.5vw, 38px); font-weight: 400; line-height: 1.8; }
+    .preloader-track { width: 120px; height: 2px; overflow: hidden; background: #efd59b26; border-radius: 2px; direction: ltr; }
+    .preloader-track::after { content: ''; display: block; width: 45%; height: 100%; background: #efd59b; animation: preloader-travel 1.5s ease-in-out infinite; }
+    @keyframes preloader-travel { 0% { transform: translateX(-110%); } 100% { transform: translateX(330%); } }
+    @media (prefers-reduced-motion: reduce) { #site-preloader { transition: none; } .preloader-track::after { animation: none; width: 100%; opacity: .6; } }
+  </style>
+  <noscript><style>#site-preloader { display: none; } html.site-loading { overflow: auto; }</style></noscript>
+  <script src="preloader.js?v=20261028-1" defer></script>
   <title>شاهرود فردا — سفر به شهر متصل</title>
+  <link rel="icon" type="image/png" sizes="64x64" href="assets/shahrood-icon-gold.png">
+  <link rel="apple-touch-icon" href="assets/shahrood-logo-gold.png">
+  <link rel="preload" href="assets/shahrood-logo-gold.png" as="image" fetchpriority="high">
+  <link rel="stylesheet" href="branding.css?v=20261028-gold1">
   <link rel="preload" href="assets/vazirmatn-regular.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/abr.jpg" as="image">
   <link rel="stylesheet" href="style.css"><link rel="stylesheet" href="paired.css"><link rel="stylesheet" href="photo-sequence.css"><link rel="stylesheet" href="photo-clearance.css"><link rel="stylesheet" href="premium-overrides.css"><link rel="stylesheet" href="focus-only.css">
   <script src="vendor/d3.min.js" defer></script>
 <link rel="stylesheet" href="./final-content-guard.css" /></head>
-<body>
+<body aria-busy="true">
+<div id="site-preloader" role="status" aria-live="polite" aria-label="شاهرود، شهر زندگی">
+  <div class="preloader-content">
+    <img class="preloader-mark" src="assets/shahrood-logo-gold.png" width="640" height="640" alt="" fetchpriority="high">
+    <p>شاهرود، شهر زندگی</p>
+    <div class="preloader-track" aria-hidden="true"></div>
+  </div>
+</div>
 <a class="skip" href="#journey">رفتن به محتوای سفر</a>
 <div class="landscape" aria-hidden="true"><div class="photo-layer active" style="background-image:url('assets/abr.jpg')"></div><div class="photo-layer"></div><div class="photo-shade"></div><div class="grain"></div></div>
 <canvas id="world" aria-hidden="true"></canvas>
 <div class="ambient-label" aria-hidden="true"><span class="cross">＋</span><span id="scene-label">SH A H R O O D / 36° 25′ N</span><span class="fine-line"></span></div>
 <header>
-  <a href="#arrival" class="brand" aria-label="شاهرود فردا، ابتدای سفر"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M4 29 15 10l6 11 5-7 10 15M4 29h32M15 10v19M21 21v8M26 14v15"/></svg><span>شاهرود<span class="brand-sub">روایتی از فردا</span></span></a>
-  <nav aria-label="ناوبری اصلی"><a href="#citizen">دنیاهای شهر</a><a href="#roadmap">مسیر اجرا</a><button id="open-library">امکانات طرح <span>↗</span></button><button id="open-presentation" class="presentation-trigger">حالت ارائه ▶</button></nav>
+  <a href="#arrival" class="brand" aria-label="شاهرود، شهر زندگی — ابتدای سفر"><img class="brand-logo" src="assets/shahrood-logo-gold.png" width="640" height="640" alt="شاهرود، شهر زندگی"></a>
+  <nav aria-label="ناوبری اصلی"><a href="#citizen">دنیاهای شهر</a><a href="#roadmap">مسیر اجرا</a><button id="open-library">امکانات طرح <span>↗</span></button></nav>
   <button class="atlas-toggle" id="open-atlas"><span class="four-dot">⠿</span> نقشه سفر</button>
 </header>
 <main id="journey"></main>
@@ -25,11 +50,10 @@
   <div class="phase-track" role="tablist" aria-label="مراحل اجرای پیشنهادی"></div>
   <div id="phase-detail" role="tabpanel"></div>
   <div class="closing"><span class="eyebrow">یک دعوت برای ساختن</span><h2>شهر متصل،<br>با <em>مردمش</em> ساخته می‌شود.</h2><p>پیشنهاد آغاز: چند خدمت پرتکرار، یک یا دو محدوده شهری<br>و یک مسیر پاسخ‌گویی واقعی.</p><button class="primary" id="closing-library">کاوش همه امکانات <span>↗</span></button></div>
-  <footer><div><b>شاهرود فردا</b><p>روایت تعاملی پیشنهادنامه شهر هوشمند شاهرود</p></div><div><span>نمایش مفهومی · خدمات پیشنهادی</span><p>زمان‌بندی‌ها پیشنهادی‌اند؛ بودجه و اهداف کمی نیازمند امکان‌سنجی‌اند.</p></div><button class="text-button" id="open-credits">منابع تصاویر و درباره پروژه ↗</button></footer>
+  <footer><div><a href="#arrival" aria-label="شاهرود، شهر زندگی — ابتدای سفر"><img class="footer-logo" src="assets/shahrood-logo-gold.png" width="640" height="640" alt="شاهرود، شهر زندگی" loading="lazy"></a><p>روایت تعاملی پیشنهادنامه شهر هوشمند شاهرود</p></div><div><span>نمایش مفهومی · خدمات پیشنهادی</span><p>زمان‌بندی‌ها پیشنهادی‌اند؛ بودجه و اهداف کمی نیازمند امکان‌سنجی‌اند.</p></div><button class="text-button" id="open-credits">منابع تصاویر و درباره پروژه ↗</button></footer>
 </section>
 <aside class="chapter-rail" aria-label="فصل‌های سفر"></aside>
 <div class="journey-hud"><div class="hud-place"><span class="live-dot"></span><span id="place-name">جنگل ابر · شاهرود</span></div><button id="motion-toggle" aria-pressed="false" aria-label="کاهش حرکت انیمیشن‌ها">حرکت آرام <span>◌</span></button><span class="hud-number"><b id="chapter-no">۰۰</b><i>/</i>۰۶</span></div>
-<aside id="presentation-panel" class="presentation-panel" aria-label="کنترل حالت ارائه" hidden><div><span class="eyebrow">ارائه‌ی هدایت‌شده</span><strong id="presentation-title">یک روز در شاهرود فردا</strong><small id="presentation-status">آماده‌ی شروع · حدود دو دقیقه</small></div><div class="presentation-controls"><button id="presentation-play" aria-label="شروع ارائه">شروع</button><button id="presentation-pause" aria-label="مکث ارائه">مکث</button><button id="presentation-prev" aria-label="مقصد قبلی">قبلی</button><button id="presentation-next" aria-label="مقصد بعدی">بعدی</button><button id="presentation-exit" aria-label="خروج از حالت ارائه">خروج</button><button id="presentation-fullscreen" aria-label="تمام صفحه">تمام صفحه</button></div></aside>
 <div class="scroll-progress" aria-hidden="true"><div></div></div>
 <dialog id="atlas" class="atlas-dialog"><div class="dialog-bar"><div><span class="eyebrow">مسیر کشف شاهرود</span><h2>کدام دنیا را می‌خواهید ببینید؟</h2></div><button class="close" aria-label="بستن نقشه سفر">×</button></div><div class="atlas-grid"></div><p class="dialog-note">با اسکرول بین دنیاها سفر کنید یا یک مقصد را انتخاب کنید.</p></dialog>
 <dialog id="library" class="library-dialog"><div class="dialog-bar"><div><span class="eyebrow">سکوی پیشنهادی شاهرود من</span><h2>یک شهر؛ امکانات به‌هم‌پیوسته.</h2></div><button class="close" aria-label="بستن فهرست امکانات">×</button></div><div class="library-tools"><label class="search-wrap"><span>⌕</span><input id="feature-search" type="search" placeholder="جست‌وجوی خدمت، گردشگری، درخت…" aria-label="جست‌وجوی امکانات"></label><select id="world-filter" aria-label="فیلتر دنیا"><option value="all">همه دنیاها</option></select></div><p id="result-count" class="dialog-note" aria-live="polite"></p><div class="feature-list"></div><p class="dialog-note">۱۸ بسته خدماتی + نظام اعتبار شهروندی · بر اساس پیشنهادنامه ارائه‌شده</p></dialog>

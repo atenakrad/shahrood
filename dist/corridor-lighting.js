@@ -12,13 +12,13 @@ export function corridorLightingAnchors(chapters=7){
 }
 
 // Reuse a small light pool as the visitor travels. No per-lantern shadow maps,
-// no scene-wide set of 70 point lights, and no changing shader light counts.
+// no scene-wide set of 140 point lights, and no changing shader light counts.
 export function createCorridorLighting(scene,{compact=false,chapters=7}={}){
   const anchors=corridorLightingAnchors(chapters);
   const group=new THREE.Group();group.name='corridor-real-lighting';scene.add(group);
-  const lanternCount=compact?4:6,portalCount=compact?1:2;
+  const lanternCount=compact?6:8,portalCount=compact?1:2;
   const lanterns=Array.from({length:lanternCount},()=>{
-    const light=new THREE.PointLight(0xffb34b,0,11,2);
+    const light=new THREE.PointLight(0xffbf70,0,22,2);
     light.name='lantern-warm-floor-and-stone-light';group.add(light);return light;
   });
   const portals=Array.from({length:portalCount},()=>{
@@ -45,7 +45,7 @@ export function createCorridorLighting(scene,{compact=false,chapters=7}={}){
       if(!source){light.intensity=0;return;}
       if(initialized&&light.userData.sourceId!==source.id)light.intensity=0;
       light.userData.sourceId=source.id;light.position.copy(source.position);
-      light.intensity=THREE.MathUtils.lerp(light.intensity,THREE.MathUtils.lerp(46,72,night),blend);
+      light.intensity=THREE.MathUtils.lerp(light.intensity,THREE.MathUtils.lerp(80,145,night),blend);
     });
     const nearPortals=anchors.portals.map((position,id)=>({position,id,distance:Math.abs(position.z-camera.position.z)}))
       .sort((a,b)=>a.distance-b.distance).slice(0,portalCount);

@@ -15,6 +15,8 @@ import {protectPhotoFrame,clearPhotoSightlines} from './photo-clearance.js';
 
 // One continuous spatial route: the camera travels through every district.
 export function createScene(canvas,onFeature,onPair){
+  // Every TextureLoader in the scene and its kits uses this shared manager.
+  const assetsReady=new Promise(resolve=>{THREE.DefaultLoadingManager.onLoad=resolve;});
   const narrow=()=>innerWidth<700;
   const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:false,powerPreference:'high-performance'});
   renderer.setPixelRatio(Math.min(devicePixelRatio,narrow()?1.15:1.6));
@@ -269,5 +271,10 @@ export function createScene(canvas,onFeature,onPair){
     canvas.dataset.camera=camera.position.toArray().map(v=>v.toFixed(2)).join(',');canvas.dataset.journey=p.toFixed(3);canvas.dataset.world=worlds[idx].id;
   }
   frame=requestAnimationFrame(render);
-  return{setJourney(v){target=THREE.MathUtils.clamp(v,0,6.96);if(!motionInitialized){scrollMotion.value=target;scrollMotion.velocity=0;current=target;motionInitialized=true;}},setProgress(){},setWorld(){},setReduced(v){reduced=v}};
+  const ready=assetsReady.then(()=>{
+    // Upload textures and compile materials behind the loading screen.
+    renderer.compile(scene,camera);
+    return new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+  });
+  return{ready,setJourney(v){target=THREE.MathUtils.clamp(v,0,6.96);if(!motionInitialized){scrollMotion.value=target;scrollMotion.velocity=0;current=target;motionInitialized=true;}},setProgress(){},setWorld(){},setReduced(v){reduced=v}};
 }

@@ -90,14 +90,14 @@ export function createLanternKit() {
   const canvas = document.createElement('canvas'); canvas.width = canvas.height = 128;
   const ctx = canvas.getContext('2d');
   const gradient = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
-  gradient.addColorStop(0, 'rgba(255,182,65,.48)');
-  gradient.addColorStop(.35, 'rgba(255,153,32,.20)');
+  gradient.addColorStop(0, 'rgba(255,194,100,.58)');
+  gradient.addColorStop(.35, 'rgba(255,174,65,.29)');
   gradient.addColorStop(1, 'rgba(255,153,32,0)');
   ctx.fillStyle = gradient; ctx.fillRect(0, 0, 128, 128);
   const poolTexture = new THREE.CanvasTexture(canvas); poolTexture.colorSpace = THREE.SRGBColorSpace;
   const poolMaterial = new THREE.MeshBasicMaterial({map: poolTexture, transparent: true,
     depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false});
-  const poolGeometry = new THREE.PlaneGeometry(5, 5); poolGeometry.rotateX(-Math.PI / 2);
+  const poolGeometry = new THREE.PlaneGeometry(7.5, 7.5); poolGeometry.rotateX(-Math.PI / 2);
   const matrix = new THREE.Matrix4();
   return function addLanterns(group) {
     const placements = corridorLanternPositions();
