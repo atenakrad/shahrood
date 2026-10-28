@@ -21,10 +21,30 @@ export function gazellePlacements(chapter,worldZ){
     const herd=[[30.8,-43,1.85],[34.2,-45.8,1.7],[32.5,-49.1,1.35],[37,-47.2,1.9],[36,-52,1.55]];
     herd.forEach(([x,z,size],i)=>cards.push({x,z,size,flip:i%2?-1:1}));
   }
-  // Two close encounters outside the colonnade, away from column bases.
-  if(chapter===0)cards.push({x:27.6,z:-18,size:2.25,flip:-1});
+  // A small entrance herd, grouped beside the first stretch of promenade.
+  // Stagger the depth slightly so all silhouettes can be read from the entry
+  // camera; keep every animal outside the colonnade and the walking surface.
+  if(chapter===0){
+    const herd=[
+      [27.6,-38,2.4,0,-1],
+      [30.2,-37,2.25,2,1],
+      [32.8,-38.2,2.35,1,-1],
+      [35.3,-37.5,2.3,0,-1],
+      [29.3,-40.5,1.55,2,1],
+    ];
+    herd.forEach(([x,z,size,variant,flip])=>cards.push({x,z,size,variant,flip,herd:'entrance'}));
+  }
+  // A close encounter further along the route.
   if(chapter===4)cards.push({x:27.8,z:-61,size:2.2,flip:1});
-  return cards.map((card,i)=>({...card,variant:(chapter+i)%3,y:desertHeight(card.x,card.z+worldZ)}));
+  return cards.map((card,i)=>({...card,variant:card.variant??(chapter+i)%3,y:desertHeight(card.x,card.z+worldZ)}));
+}
+
+// A prominent reference-matched leopard beside the first desert stretch.
+// The large 8-unit silhouette remains outside the promenade and colonnade.
+export function leopardPlacements(chapter,worldZ){
+  if(chapter!==0)return [];
+  const x=27.8,z=-31;
+  return [{x,z,y:desertHeight(x,z+worldZ),size:8,flip:1}];
 }
 
 export function createDesertKit(){
@@ -37,6 +57,12 @@ export function createDesertKit(){
   const gazelleMap=loader.load('assets/desert-gazelle-cutout.png');gazelleMap.colorSpace=THREE.SRGBColorSpace;gazelleMap.anisotropy=4;
   const grazingMap=loader.load('assets/desert-gazelle-grazing.png');grazingMap.colorSpace=THREE.SRGBColorSpace;grazingMap.anisotropy=4;
   const walkingMap=loader.load('assets/desert-gazelle-walking.png');walkingMap.colorSpace=THREE.SRGBColorSpace;walkingMap.anisotropy=4;
+  const leopardMap=loader.load('assets/desert-leopard-profile.png');leopardMap.colorSpace=THREE.SRGBColorSpace;leopardMap.anisotropy=4;
+  const leopardMaterial=new THREE.MeshBasicMaterial({map:leopardMap,alphaTest:.45,side:THREE.DoubleSide});
+  // Texture is 1536x1024; supporting paws end at row 891. Compensate for
+  // that transparent foot margin so the paws meet the sampled terrain height.
+  const leopardGeometry=new THREE.PlaneGeometry(1,2/3);
+  leopardGeometry.translate(0,(891/1024-.5)*(2/3),0);
   const dunesMap=loader.load('assets/desert-dunes-cutout.png');dunesMap.colorSpace=THREE.SRGBColorSpace;dunesMap.anisotropy=4;
   const gazelleMaterials=[gazelleMap,grazingMap,walkingMap].map(map=>new THREE.MeshBasicMaterial({map,alphaTest:.45,side:THREE.DoubleSide}));
   dunesMap.wrapS=THREE.MirroredRepeatWrapping;dunesMap.repeat.x=7;
@@ -79,6 +105,13 @@ export function createDesertKit(){
       mesh.name=['right-desert-gazelles-standing','right-desert-gazelles-grazing','right-desert-gazelles-walking'][variant];
       g.add(mesh);return [mesh,cards];
     });
+    const leopardCards=leopardPlacements(chapter,worldZ);
+    if(leopardCards.length){
+      const leopard=new THREE.InstancedMesh(leopardGeometry,leopardMaterial,leopardCards.length);
+      leopard.name='right-desert-large-reference-leopard';
+      leopard.userData.reference='Persian leopard appearance supplied by user';
+      g.add(leopard);animalBatches.push([leopard,leopardCards]);
+    }
     rocks.name='right-desert-rocks';tufts.name='right-desert-grasses';
     const rockCards=[],grassCards=[];
     for(let i=0;i<rockCount;i++){

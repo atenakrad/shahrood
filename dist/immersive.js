@@ -1,6 +1,9 @@
+import {createLanternKit} from './lanterns.js';
+import {PORTAL_LOCAL_Z} from './corridor-layout.js';
+import {createPersianArchKit} from './persian-arches.js';
 import {createForestKit} from './forest.js';
 import {createDesertKit} from './desert.js';
-import {createGrapevineKit} from './grapevine.js';
+import {createGrapevineKit,createColumnGrapevineKit} from './grapevine.js';
 import * as THREE from './vendor/three.module.js';
 import {worlds} from './data.js';
 import {pairedStops} from './paired-stops.js';
@@ -77,12 +80,6 @@ export function createScene(canvas,onFeature,onPair){
   columnTexture.repeat.set(2,3);
   columnTexture.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());
   const columnMat=new THREE.MeshStandardMaterial({map:columnTexture,color:0xffffff,roughness:.78,metalness:0});
-  const archTileTexture=new THREE.TextureLoader().load('assets/arch-tile-pattern.png');
-  archTileTexture.colorSpace=THREE.SRGBColorSpace;
-  archTileTexture.wrapS=archTileTexture.wrapT=THREE.RepeatWrapping;
-  archTileTexture.repeat.set(.105,.10);
-  archTileTexture.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());
-  const archTileMat=new THREE.MeshStandardMaterial({map:archTileTexture,color:0xffffff,roughness:.6,metalness:.12});
   function box(g,mat,size,pos,ry=0){const m=new THREE.Mesh(boxGeo,mat);m.scale.set(...size);m.position.set(...pos);m.rotation.y=ry;g.add(m);return m;}
   function stoneBox(g,size,pos){
     // Match the column's stone pattern scale, including on long connecting beams.
@@ -111,29 +108,8 @@ export function createScene(canvas,onFeature,onPair){
     return m;
   }
   function skyline(x,z,seed){const g=new THREE.Group();g.position.set(x,0,z);for(let i=0;i<7;i++){const w=4+rand(seed+i)*6,h=5+rand(seed+i+40)*13;stoneBox(g,[w,h,5],[(-3+i)*7,h/2,rand(seed+i+80)*5]);}scene.add(g);}
-  function arch(g,x,z,width=22,height=19,mat=stone){
-    const radius=width/2,inside=radius-.65,spring=height-radius;
-    const sh=new THREE.Shape();sh.moveTo(-radius,0);sh.lineTo(-radius,spring);sh.absarc(0,spring,radius,Math.PI,0,true);sh.lineTo(radius,0);sh.lineTo(inside,0);sh.lineTo(inside,spring);sh.absarc(0,spring,inside,0,Math.PI,false);sh.lineTo(-inside,0);sh.closePath();
-    const geo=new THREE.ExtrudeGeometry(sh,{depth:.85,bevelEnabled:true,bevelSegments:2,bevelSize:.12,bevelThickness:.12,curveSegments:38});const m=new THREE.Mesh(geo,mat);m.position.set(x,0,z);g.add(m);return m;
-  }
-  function illuminatedArch(g,z,width,height){
-    const radius=width/2,spring=height-radius,pts=[];
-    pts.push(new THREE.Vector3(-radius,1.2,z));
-    pts.push(new THREE.Vector3(-radius,spring,z));
-    for(let i=0;i<=48;i++){
-      const a=Math.PI-i*Math.PI/48;
-      pts.push(new THREE.Vector3(Math.cos(a)*radius,spring+Math.sin(a)*radius,z));
-    }
-    pts.push(new THREE.Vector3(radius,1.2,z));
-    const strip=new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts),100,.095,5,false),goldGlow);
-    g.add(strip);
-    // Inlaid turquoise medallions, close to the reference's Persian tile details.
-    for(let i=1;i<12;i++){
-      const a=Math.PI-i*Math.PI/12,p=new THREE.Vector3(Math.cos(a)*(radius+1.1),spring+Math.sin(a)*(radius+1.1),z-.05);
-      const tile=new THREE.Mesh(new THREE.OctahedronGeometry(.29,0),turquoise);
-      tile.position.copy(p);tile.scale.z=.22;g.add(tile);
-    }
-  }
+  const addPersianArch=createPersianArchKit({stoneMaterial:ivory,anisotropy:Math.min(8,renderer.capabilities.getMaxAnisotropy())});
+  function arch(g,x,z,width=32,height=23){return addPersianArch(g,x,z,width,height);}
   function botanicalTree(g,x,z,seed){
     const bark=new THREE.MeshStandardMaterial({color:0x66513a,roughness:1});
     const branch=new THREE.Mesh(new THREE.CylinderGeometry(.16,.34,5.5,7),bark);
@@ -157,8 +133,11 @@ export function createScene(canvas,onFeature,onPair){
   // Architectural kit for the real-time pavilion: patterned stone, recessed
   // archways, shaded colonnades and geometric ceramic inlays. All geometry is
   // generated locally so the presentation does not rely on network assets.
+  const addLanterns=createLanternKit();
   const wrapBeam=createGrapevineKit();
+  const wrapColumn=createColumnGrapevineKit();
   function pavilion(g,chapter){
+    addLanterns(g);
     const floor=box(g,ivory,[34,.2,111],[0,-.1,-43]);floor.receiveShadow=true;
     const patternedFloor=new THREE.Mesh(new THREE.PlaneGeometry(30.4,110.6),pavingMat);
     patternedFloor.rotation.x=-Math.PI/2;
@@ -190,29 +169,18 @@ export function createScene(canvas,onFeature,onPair){
         const z=columnZ[j];
         const plinth=stoneBox(g,[2.65,.6,2.65],[side*24,.3,z]);plinth.receiveShadow=true;
         const shaft=cylinder(g,columnMat,.83,9,[side*24,5.08,z]);shaft.castShadow=true;
+        wrapColumn(g,side,z,worldStart(chapter));
         cylinder(g,columnMat,1.08,.35,[side*24,9.725,z]);
         cylinder(g,bronze,1.12,.19,[side*24,9.975,z]);
         const capital=stoneBox(g,[3.2,.55,3.2],[side*24,10.325,z]);capital.castShadow=true;
-        const lantern=new THREE.Mesh(new THREE.OctahedronGeometry(.52,0),goldGlow);
-        lantern.position.set(side*18.6,7.9,z-5);g.add(lantern);
-        cylinder(g,bronze,.025,2,[side*18.6,9.25,z-5]);
       }
     }
     // The complete marble/teal pattern is now one repeat-wrapped image texture,
     // replacing the crude individual geometric decals used in earlier versions.
     // Keep arch portals away from the two photographic stops at z≈-34 and -50.
-    const gates=chapter===0?[7,-91]:chapter===4?[8,-73]:chapter===2?[5,-86]:chapter===5?[5,-89]:[7,-89];
+    const gates=PORTAL_LOCAL_Z;
     for(const z of gates){
-      // A layered, deep stone portal rather than a single primitive hoop.
-      arch(g,0,z,32,23,stone).castShadow=true;
-      arch(g,0,z-.8,29.6,21.8,archTileMat).castShadow=true;
-      arch(g,0,z-1.25,28.2,20.8,ivory).castShadow=true;
-      // A continuous luminous arch traces the interior and reads beautifully at dusk.
-      illuminatedArch(g,z-1.49,27.15,20.35);
-      for(const side of [-1,1]){
-        box(g,terracotta,[3.7,1.15,3],[side*15.2,1,z-1]).castShadow=true;
-        box(g,turquoise,[1.8,.13,2],[side*15.2,3,z-1]);
-      }
+      arch(g,0,z,32,23);
     }
   }
   function signTexture(title,subtitle){const c=document.createElement('canvas');c.width=1200;c.height=300;const ctx=c.getContext('2d');ctx.fillStyle='#102b24';ctx.fillRect(0,0,1200,300);ctx.strokeStyle='#f0d09a';ctx.lineWidth=5;ctx.strokeRect(18,18,1164,264);ctx.direction='rtl';ctx.textAlign='center';ctx.textBaseline='middle';ctx.shadowColor='rgba(0,0,0,.65)';ctx.shadowBlur=8;ctx.fillStyle='#fffdf2';ctx.font='700 60px Vazir, Tahoma';ctx.fillText(title,600,116,1080);ctx.shadowBlur=5;ctx.fillStyle='#f4d9a7';ctx.font='700 32px Vazir, Tahoma';ctx.fillText(subtitle,600,205,1080);const texture=new THREE.CanvasTexture(c);texture.colorSpace=THREE.SRGBColorSpace;textures.push(texture);return texture;}
@@ -227,7 +195,6 @@ export function createScene(canvas,onFeature,onPair){
     box(group,goldGlow,[width*.88,.045,.07],[0,h/2+.21,.03]);
     box(group,stone,[width+.8,.24,.75],[0,-h/2-.5,-.32]);
     return group;}
-  function lamps(g,color=light){for(let i=0;i<8;i++){const x=i%2===0?-8.2:8.2,z=8-Math.floor(i/2)*24;cylinder(g,bronze,.06,5,[x,2.5,z]);box(g,color,[.65,.08,.65],[x,5,z]);const ring=new THREE.Mesh(new THREE.RingGeometry(.3,.8,32),new THREE.MeshBasicMaterial({color:0xc1dec1,transparent:true,opacity:.08,side:THREE.DoubleSide}));ring.rotation.x=-Math.PI/2;ring.position.set(x,.03,z);g.add(ring);}}
   const ground=box(scene,sand,[210,1,900],[0,-.65,-340]);ground.receiveShadow=true;
   // محیط دوردست: ابرهای سبک، خط کوه شاهرود و ساختمان‌های کم‌ارتفاع در حاشیه مسیر.
   [-95,-55].forEach((x,i)=>mountain(x,-82-i*92,38+rand(i)*22,20+rand(i+3)*15));
@@ -242,13 +209,12 @@ export function createScene(canvas,onFeature,onPair){
   // 00: a monumental gateway opens onto Shahrud's landscape.
   {const g=groups[0];}
   // 01: a civic avenue, with service stations and readable in-world exhibits.
-  {const g=groups[1];arch(g,0,-10,22,20,bronze); }
+
   // 02: the route enters a woodland, with bridges, water and tree identities.
-  {const g=groups[2];box(g,glass,[7,.03,110],[-13,.02,-43]);for(let i=0;i<5;i++){const ring=new THREE.Mesh(new THREE.TorusGeometry(13+i*1.1,.045,5,80,Math.PI),bronze);ring.position.set(0,2,-78-i*1.4);g.add(ring);}}
+  {const g=groups[2];box(g,glass,[7,.03,110],[-13,.02,-43]);}
   // 03: stations and an illuminated network surround a gently curving avenue.
-  {const g=groups[3];arch(g,0,-79,24,18,bronze); }
-  // 04: brick arcades create a genuine passage into the heritage district.
-  {const g=groups[4];for(let j=0;j<6;j++){arch(g,0,7-j*16,24,22,stone);for(let side of [-1,1]){box(g,stone,[1,13,1.2],[side*12.6,6.5,-j*16]);box(g,glass,[.05,1.2,8],[side*12,2.3,-j*16]);}}}
+
+  // Heritage uses the same clear portal spacing as the rest of the route.
   // 05: shaded market stalls and a cultural courtyard line the route.
 
   // 06: the route arrives in a connected civic forum.
@@ -263,8 +229,7 @@ export function createScene(canvas,onFeature,onPair){
     frame.traverse(o=>{if(o.isMesh&&o.geometry.type==='PlaneGeometry'){o.userData.feature=feature.id;hitTargets.push(o)}});
   })));
   canvas.dataset.treeCount='0';canvas.dataset.pairedPhotos=String(pairedFrames.length);
-  // Inter-world gateways establish continuity rather than replacing objects.
-  for(let i=1;i<7;i++){const z=worldStart(i)+17;const g=new THREE.Group();scene.add(g);arch(g,0,z,25,24,bronze);arch(g,0,z-2,25,24,dark);}
+  // Portal placement is centralized; extra boundary gates previously overlapped.
   const dustGeo=new THREE.BufferGeometry(),dustPos=[];for(let i=0;i<140;i++)dustPos.push((rand(i+671)-.5)*100,rand(i+372)*22,-rand(i+71)*100);dustGeo.setAttribute('position',new THREE.Float32BufferAttribute(dustPos,3));const dust=new THREE.Points(dustGeo,new THREE.PointsMaterial({color:0xd7dec3,size:.06,transparent:true,opacity:.33,depthWrite:false}));scene.add(dust);
   const palette=[0xe8cba6,0xe3c5a3,0xd9c5ac,0xe1c6a7,0xe7caab,0xddb99b,0xd7c5ad].map(v=>new THREE.Color(v));
   function resize(){renderer.setPixelRatio(Math.min(devicePixelRatio,narrow()?1.15:1.6));renderer.setSize(innerWidth,innerHeight);pairedFrames.forEach(f=>{f.position.x=f.userData.side*(narrow()?7:18);f.scale.setScalar(narrow()?.65:1)});camera.aspect=innerWidth/innerHeight;camera.fov=narrow()?78:61;camera.updateProjectionMatrix();}
