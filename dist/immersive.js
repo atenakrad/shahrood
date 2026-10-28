@@ -1,3 +1,6 @@
+import {createForestKit} from './forest.js';
+import {createDesertKit} from './desert.js';
+import {createGrapevineKit} from './grapevine.js';
 import * as THREE from './vendor/three.module.js';
 import {worlds} from './data.js';
 import {pairedStops} from './paired-stops.js';
@@ -68,48 +71,18 @@ export function createScene(canvas,onFeature,onPair){
   pavingTexture.repeat.set(1,3);
   pavingTexture.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());
   const pavingMat=new THREE.MeshStandardMaterial({map:pavingTexture,color:0xffffff,roughness:.55,metalness:.035});
-  const planterTexture=new THREE.TextureLoader().load('assets/ornamental-planter.png');
-  planterTexture.colorSpace=THREE.SRGBColorSpace;
-  planterTexture.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());
-  const planterMaterial=new THREE.MeshBasicMaterial({map:planterTexture,transparent:true,alphaTest:.15,side:THREE.DoubleSide,depthWrite:true});
-  const planterGeometry=new THREE.PlaneGeometry(9.3,8.5);
-  const treeTexture=new THREE.TextureLoader().load('assets/realistic-tree.png');
-  treeTexture.colorSpace=THREE.SRGBColorSpace;
-  treeTexture.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());
-  const treeMaterial=new THREE.MeshBasicMaterial({map:treeTexture,transparent:true,alphaTest:.16,side:THREE.DoubleSide,depthWrite:true});
-  const treeGeometry=new THREE.PlaneGeometry(8,10.5);
-  const cypressTexture=new THREE.TextureLoader().load('assets/cypress-tree.png');
-  cypressTexture.colorSpace=THREE.SRGBColorSpace;
-  cypressTexture.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());
-  const cypressMat=new THREE.MeshBasicMaterial({map:cypressTexture,transparent:true,alphaTest:.16,side:THREE.DoubleSide,depthWrite:true});
-  const cypressGeo=new THREE.PlaneGeometry(3.8,11.4);
   const columnTexture=new THREE.TextureLoader().load('assets/column-stone-pattern.png');
   columnTexture.colorSpace=THREE.SRGBColorSpace;
   columnTexture.wrapS=columnTexture.wrapT=THREE.RepeatWrapping;
   columnTexture.repeat.set(2,3);
   columnTexture.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());
   const columnMat=new THREE.MeshStandardMaterial({map:columnTexture,color:0xffffff,roughness:.78,metalness:0});
-  function cypress(g,x,z,scale=1){
-    const m=new THREE.Mesh(cypressGeo,cypressMat);
-    m.position.set(x,5.7*scale,z);m.scale.setScalar(scale);
-    m.rotation.y=x>0?-.15:.15;g.add(m);return m;
-  }
   const archTileTexture=new THREE.TextureLoader().load('assets/arch-tile-pattern.png');
   archTileTexture.colorSpace=THREE.SRGBColorSpace;
   archTileTexture.wrapS=archTileTexture.wrapT=THREE.RepeatWrapping;
   archTileTexture.repeat.set(.105,.10);
   archTileTexture.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());
   const archTileMat=new THREE.MeshStandardMaterial({map:archTileTexture,color:0xffffff,roughness:.6,metalness:.12});
-  const panelTileTexture=archTileTexture.clone();panelTileTexture.repeat.set(1,2);panelTileTexture.needsUpdate=true;
-  const panelTileMat=new THREE.MeshStandardMaterial({map:panelTileTexture,color:0xffffff,roughness:.65,metalness:.1});
-  function photographicTree(g,x,z,scale=1){
-    const tree=new THREE.Mesh(treeGeometry,treeMaterial);
-    tree.position.set(x,5.25*scale,z);
-    tree.scale.setScalar(scale);
-    tree.rotation.y=x>0?-.2:.2;
-    g.add(tree);
-    return tree;
-  }
   function box(g,mat,size,pos,ry=0){const m=new THREE.Mesh(boxGeo,mat);m.scale.set(...size);m.position.set(...pos);m.rotation.y=ry;g.add(m);return m;}
   function stoneBox(g,size,pos){
     // Match the column's stone pattern scale, including on long connecting beams.
@@ -184,6 +157,7 @@ export function createScene(canvas,onFeature,onPair){
   // Architectural kit for the real-time pavilion: patterned stone, recessed
   // archways, shaded colonnades and geometric ceramic inlays. All geometry is
   // generated locally so the presentation does not rely on network assets.
+  const wrapBeam=createGrapevineKit();
   function pavilion(g,chapter){
     const floor=box(g,ivory,[34,.2,111],[0,-.1,-43]);floor.receiveShadow=true;
     const patternedFloor=new THREE.Mesh(new THREE.PlaneGeometry(30.4,110.6),pavingMat);
@@ -211,6 +185,7 @@ export function createScene(canvas,onFeature,onPair){
       // One continuous architrave replaces the isolated short beam stubs.
       const beam=stoneBox(g,[2.05,1.8,rowLength],[side*24,11.48,rowCenter]);
       beam.castShadow=true;beam.receiveShadow=true;
+      wrapBeam(g,side,rowFront,rowBack,worldStart(chapter));
       for(let j=0;j<columnCount;j++){
         const z=columnZ[j];
         const plinth=stoneBox(g,[2.65,.6,2.65],[side*24,.3,z]);plinth.receiveShadow=true;
@@ -218,14 +193,6 @@ export function createScene(canvas,onFeature,onPair){
         cylinder(g,columnMat,1.08,.35,[side*24,9.725,z]);
         cylinder(g,bronze,1.12,.19,[side*24,9.975,z]);
         const capital=stoneBox(g,[3.2,.55,3.2],[side*24,10.325,z]);capital.castShadow=true;
-        // Luminous recessed tile panels alternate along each arcade.
-        const tile=box(g,panelTileMat,[.14,3.9,4.2],[side*22.75,6,z-6]);
-        tile.rotation.y=side*.05;
-        for(let k=0;k<3;k++){
-          const ornament=new THREE.Mesh(new THREE.TorusGeometry(.56+k*.42,.035,4,8),k===1?bronze:ivory);
-          ornament.rotation.y=Math.PI/2;ornament.rotation.z=Math.PI/8;
-          ornament.position.set(side*22.59,6,z-6);g.add(ornament);
-        }
         const lantern=new THREE.Mesh(new THREE.OctahedronGeometry(.52,0),goldGlow);
         lantern.position.set(side*18.6,7.9,z-5);g.add(lantern);
         cylinder(g,bronze,.025,2,[side*18.6,9.25,z-5]);
@@ -247,69 +214,6 @@ export function createScene(canvas,onFeature,onPair){
         box(g,turquoise,[1.8,.13,2],[side*15.2,3,z-1]);
       }
     }
-    // Art-directed garden beds anchor the arcade and add irregular silhouettes.
-    const foliage=[leaf,leafLight,new THREE.MeshStandardMaterial({color:0x7c8760,roughness:1})];
-    const gardenCount=chapter===2?28:chapter===0?12:chapter===4?10:16;
-    for(let j=0;j<gardenCount;j++){
-      const side=j%2?-1:1,z=7-Math.floor(j/2)*(chapter===2?7.4:chapter===0?17:12);
-      const x=side*(31+rand(j+chapter*13)*6);
-      photographicTree(g,x,z,.72+rand(j+chapter*47)*.48);
-    }
-    // Slender cypresses fill alternating gaps without blocking display panels.
-    const cypressCount=chapter===2?22:chapter===0?14:12;
-    for(let j=0;j<cypressCount;j++){
-      const side=j%2?-1:1,z=-2-Math.floor(j/2)*(chapter===2?8:chapter===0?15:17);
-      cypress(g,side*(38+rand(j+chapter*51)*5),z,.82+rand(j+73)*.4);
-    }
-    if(chapter===0){
-      // Arrival plaza: a focal pavilion rather than an endlessly repeated tunnel.
-      for(const side of [-1,1]){
-        box(g,stone,[10,.7,12],[side*35,.35,-12]).receiveShadow=true;
-        for(let k=0;k<3;k++){
-          cylinder(g,columnMat,.52,11,[side*(31+k*4),5.9,-18]);
-          stoneBox(g,[1.8,.55,13],[side*(31+k*4),11.5,-15]);
-        }
-        stoneBox(g,[11,5,.65],[side*35,5,-25]);
-        box(g,turquoise,[10,.13,2.8],[side*35,7.6,-25]);
-      }
-      for(let j=0;j<8;j++){
-        const side=j%2?-1:1,z=2-Math.floor(j/2)*28;
-        photographicTree(g,side*(43+rand(j+81)*6),z,1.1+rand(j+9)*.35);
-      }
-    }else if(chapter===2){
-      // Forest chapter: trees become the architecture, with an open canopy.
-      for(let j=0;j<22;j++){
-        const side=j%2?-1:1,z=9-Math.floor(j/2)*10,x=side*(42+rand(j+99)*14);
-        photographicTree(g,x,z,1.1+rand(j+19)*.5);
-      }
-    }else if(chapter===4){
-      // Heritage district: layered brick screen, niches and tiled dome silhouettes.
-      for(const side of [-1,1])for(let j=0;j<5;j++){
-        const z=3-j*21;stoneBox(g,[6,12,12],[side*37,6,z]);
-        const niche=arch(g,side*37,z+6.4,5.5,8,turquoise);
-        niche.scale.set(.7,.7,.7);
-      }
-    }else if(chapter===5){
-      // Bazaar: warm covered stalls create a distinct rhythm from the heritage court.
-      for(const side of [-1,1])for(let j=0;j<7;j++){
-        const z=7-j*15,x=side*34;
-        stoneBox(g,[9,4,7],[x,2,z]);
-        box(g,terracotta,[9.8,.5,8],[x,4.5,z]);
-        box(g,goldGlow,[8,.09,.12],[x,4.15,z+4.1]);
-      }
-    }
-    // Photographic ornamental planters sit in the actual 3D world, staggered
-    // outside the walking path. Shared geometry/texture keeps memory usage low.
-    if(chapter===0||chapter===1||chapter===4||chapter===5){
-      for(let j=0;j<8;j++){
-        const side=j%2?-1:1,z=1-Math.floor(j/2)*28;
-        const planter=new THREE.Mesh(planterGeometry,planterMaterial);
-        planter.position.set(side*30.5,4.2,z);
-        planter.rotation.y=side*-.24;
-        planter.scale.setScalar(chapter===0?1.05:.86);
-        g.add(planter);
-      }
-    }
   }
   function signTexture(title,subtitle){const c=document.createElement('canvas');c.width=1200;c.height=300;const ctx=c.getContext('2d');ctx.fillStyle='#102b24';ctx.fillRect(0,0,1200,300);ctx.strokeStyle='#f0d09a';ctx.lineWidth=5;ctx.strokeRect(18,18,1164,264);ctx.direction='rtl';ctx.textAlign='center';ctx.textBaseline='middle';ctx.shadowColor='rgba(0,0,0,.65)';ctx.shadowBlur=8;ctx.fillStyle='#fffdf2';ctx.font='700 60px Vazir, Tahoma';ctx.fillText(title,600,116,1080);ctx.shadowBlur=5;ctx.fillStyle='#f4d9a7';ctx.font='700 32px Vazir, Tahoma';ctx.fillText(subtitle,600,205,1080);const texture=new THREE.CanvasTexture(c);texture.colorSpace=THREE.SRGBColorSpace;textures.push(texture);return texture;}
   function placard(g,title,sub,pos,width=10,feature=null){const group=new THREE.Group();group.position.set(...pos);group.rotation.y=.12;g.add(group);const screen=new THREE.Mesh(new THREE.PlaneGeometry(width,width/4),new THREE.MeshBasicMaterial({map:signTexture(title,sub)}));screen.userData.boardLabel=true;screen.position.z=.09;group.add(screen);box(group,bronze,[width+.16,width/4+.16,.12],[0,0,-.02]);if(feature){screen.userData.feature=feature;hitTargets.push(screen);}return group;}
@@ -326,26 +230,27 @@ export function createScene(canvas,onFeature,onPair){
   function lamps(g,color=light){for(let i=0;i<8;i++){const x=i%2===0?-8.2:8.2,z=8-Math.floor(i/2)*24;cylinder(g,bronze,.06,5,[x,2.5,z]);box(g,color,[.65,.08,.65],[x,5,z]);const ring=new THREE.Mesh(new THREE.RingGeometry(.3,.8,32),new THREE.MeshBasicMaterial({color:0xc1dec1,transparent:true,opacity:.08,side:THREE.DoubleSide}));ring.rotation.x=-Math.PI/2;ring.position.set(x,.03,z);g.add(ring);}}
   const ground=box(scene,sand,[210,1,900],[0,-.65,-340]);ground.receiveShadow=true;
   // محیط دوردست: ابرهای سبک، خط کوه شاهرود و ساختمان‌های کم‌ارتفاع در حاشیه مسیر.
-  [-95,-55,54,92].forEach((x,i)=>mountain(x,-82-i*92,38+rand(i)*22,20+rand(i+3)*15));
+  [-95,-55].forEach((x,i)=>mountain(x,-82-i*92,38+rand(i)*22,20+rand(i+3)*15));
   // Keep distant massing outside the entrance sightlines; close cuboid skylines
   // previously made the opening feel like an unfinished blockout.
-  for(let i=1;i<7;i++){skyline(i%2?-83:83,worldStart(i)-64,200+i*9);}
+
   const routePoints=[];for(let i=0;i<=7;i++){routePoints.push(new THREE.Vector3(Math.sin(i*1.7)*3,4.8+(i===2?1.5:0),32-i*110));}
   const route=new THREE.CatmullRomCurve3(routePoints,false,'catmullrom',.45);
   // Road surfaces and edge lines continue through every environment.
-  for(let i=0;i<7;i++){const z=worldStart(i);const g=new THREE.Group();g.position.z=z;scene.add(g);groups.push(g);pavilion(g,i);}
+  const addDesert=createDesertKit(),addForest=createForestKit();
+  for(let i=0;i<7;i++){const z=worldStart(i);const g=new THREE.Group();g.position.z=z;scene.add(g);groups.push(g);pavilion(g,i);addDesert(g,z,i);addForest(g,z,i);}
   // 00: a monumental gateway opens onto Shahrud's landscape.
   {const g=groups[0];}
   // 01: a civic avenue, with service stations and readable in-world exhibits.
-  {const g=groups[1];for(let side of [-1,1])for(let i=0;i<11;i++){const x=side*(35+rand(i+35)*13),z=6-i*9,h=6+rand(i+92)*17;stoneBox(g,[6,h,6],[x,h/2,z]);for(let k=0;k<Math.floor(h/2.5);k++){box(g,glass,[5,.65,.08],[x,1.7+k*2.5,z+3.05]);}box(g,bronze,[6.3,.25,6.3],[x,h,z]);}arch(g,0,-10,22,20,bronze);}
+  {const g=groups[1];arch(g,0,-10,22,20,bronze); }
   // 02: the route enters a woodland, with bridges, water and tree identities.
   {const g=groups[2];box(g,glass,[7,.03,110],[-13,.02,-43]);for(let i=0;i<5;i++){const ring=new THREE.Mesh(new THREE.TorusGeometry(13+i*1.1,.045,5,80,Math.PI),bronze);ring.position.set(0,2,-78-i*1.4);g.add(ring);}}
   // 03: stations and an illuminated network surround a gently curving avenue.
-  {const g=groups[3];for(let side of [-1,1]){box(g,stone,[12,.4,80],[side*32,.15,-36]);for(let i=0;i<4;i++){const z=1-i*24;box(g,glass,[13,.3,10],[side*32,6,z]);cylinder(g,bronze,.13,6,[side*27,3,z]);cylinder(g,bronze,.13,6,[side*37,3,z]);}}arch(g,0,-79,24,18,bronze);}
+  {const g=groups[3];arch(g,0,-79,24,18,bronze); }
   // 04: brick arcades create a genuine passage into the heritage district.
-  {const g=groups[4];for(let j=0;j<6;j++){arch(g,0,7-j*16,24,22,stone);for(let side of [-1,1]){box(g,stone,[1,13,1.2],[side*12.6,6.5,-j*16]);box(g,glass,[.05,1.2,8],[side*12,2.3,-j*16]);}}const tower=cylinder(g,columnMat,2.4,28,[25,14,-53]);for(let h of [5,18,26])cylinder(g,bronze,2.6,.4,[25,h,-53]);const dome=new THREE.Mesh(new THREE.SphereGeometry(6,36,24,0,Math.PI*2,0,Math.PI/2),glass);dome.position.set(28,11,-79);g.add(dome);stoneBox(g,[16,11,16],[28,5.5,-79]);}
+  {const g=groups[4];for(let j=0;j<6;j++){arch(g,0,7-j*16,24,22,stone);for(let side of [-1,1]){box(g,stone,[1,13,1.2],[side*12.6,6.5,-j*16]);box(g,glass,[.05,1.2,8],[side*12,2.3,-j*16]);}}}
   // 05: shaded market stalls and a cultural courtyard line the route.
-  {const g=groups[5];for(let side of [-1,1])for(let i=0;i<7;i++){const x=side*28,z=8-i*14;stoneBox(g,[9,4,8],[x,2,z]);const canopy=new THREE.Mesh(new THREE.ConeGeometry(7,2,4),i%2?bronze:glass);canopy.rotation.y=Math.PI/4;canopy.position.set(x,5,z);g.add(canopy);box(g,warm,[7,.06,.08],[x,3.7,z+4.1]);}for(let j=0;j<5;j++){const z=-j*22;const c=path(g,[[-25,9,z],[-10,7,z-2],[0,6.5,z-2],[12,7,z-2],[25,9,z]],bronze,.025);for(let t=.1;t<1;t+=.1){const p=c.getPoint(t);const orb=new THREE.Mesh(new THREE.SphereGeometry(.13,8,6),warm);orb.position.copy(p);g.add(orb);}}}
+
   // 06: the route arrives in a connected civic forum.
   // Two photographs flank the original continuous route in every district.
   pairedStops.forEach((pairs,i)=>pairs.forEach((pair,j)=>pair.forEach((feature,k)=>{
@@ -385,7 +290,7 @@ export function createScene(canvas,onFeature,onPair){
     // Keep the supplied photographic sky fixed while atmospheric fog transitions
     // subtly between districts. Background is a Texture, not a Color.
     scene.fog.color.copy(palette[idx]).lerp(palette[Math.min(6,idx+1)],THREE.MathUtils.smoothstep(mix,.75,1));
-    groups.forEach(g=>g.visible=Math.abs(g.position.z-camera.position.z)<180);dust.position.z=camera.position.z-12;sun.position.set(camera.position.x-30,60,camera.position.z+25);sun.target.position.set(0,0,camera.position.z-45);clearPhotoSightlines(pairedFrames,camera,pose,canvas);clock+=reduced?0:elapsed/1000;moving.forEach(m=>m.object.position.copy(m.curve.getPoint(((clock*.07+m.offset)%1+1)%1)));renderer.render(scene,camera);
+    groups.forEach(g=>g.visible=Math.abs(g.position.z-camera.position.z)<180);addDesert.update(camera);addForest.update(camera);dust.position.z=camera.position.z-12;sun.position.set(camera.position.x-30,60,camera.position.z+25);sun.target.position.set(0,0,camera.position.z-45);clearPhotoSightlines(pairedFrames,camera,pose,canvas);clock+=reduced?0:elapsed/1000;moving.forEach(m=>m.object.position.copy(m.curve.getPoint(((clock*.07+m.offset)%1+1)%1)));renderer.render(scene,camera);
     canvas.dataset.camera=camera.position.toArray().map(v=>v.toFixed(2)).join(',');canvas.dataset.journey=p.toFixed(3);canvas.dataset.world=worlds[idx].id;
   }
   frame=requestAnimationFrame(render);
