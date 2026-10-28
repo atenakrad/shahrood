@@ -1,4 +1,5 @@
 import {createLanternKit} from './lanterns.js';
+import {createCorridorLighting} from './corridor-lighting.js';
 import {PORTAL_LOCAL_Z} from './corridor-layout.js';
 import {createPersianArchKit} from './persian-arches.js';
 import {createForestKit} from './forest.js';
@@ -24,9 +25,13 @@ export function createScene(canvas,onFeature,onPair){
   scene.background=skyTexture;
   scene.fog=new THREE.Fog(0xd5b59b,90,255);
   const camera=new THREE.PerspectiveCamera(61,innerWidth/innerHeight,.15,230);
-  const hemi=new THREE.HemisphereLight(0xffedcf,0x62584c,1.65);scene.add(hemi);
+  const hemi=new THREE.HemisphereLight(0xffedcf,0x62584c,1.0);scene.add(hemi);
   const sun=new THREE.DirectionalLight(0xffc889,3.4);sun.position.set(-30,60,35);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);sun.shadow.camera.left=-65;sun.shadow.camera.right=65;sun.shadow.camera.top=65;sun.shadow.camera.bottom=-65;sun.shadow.normalBias=.025;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;scene.add(sun,sun.target);
-  const fill=new THREE.DirectionalLight(0xb8d3c4,.65);fill.position.set(35,20,-50);scene.add(fill);
+  sun.intensity=2.3;
+  const fill=new THREE.DirectionalLight(0xb8d3c4,.4);fill.position.set(35,20,-50);scene.add(fill);
+  const corridorLighting=createCorridorLighting(scene,{compact:narrow(),chapters:worlds.length});
+  canvas.dataset.lanternLightCount=String(corridorLighting.lanterns.length);
+  canvas.dataset.archLightCount=String(corridorLighting.portals.length*3);
   const groups=[],hitTargets=[],moving=[],textures=[],pairedFrames=[];let target=0,current=0,reduced=false,last=performance.now(),frame=0;
   const pointer=new THREE.Vector2(),ray=new THREE.Raycaster(),look=new THREE.Vector3(),worldStart=i=>32-i*110;
   const stone=new THREE.MeshStandardMaterial({color:0xcbb18b,roughness:.88});
@@ -245,6 +250,7 @@ export function createScene(canvas,onFeature,onPair){
     const pose=samplePhotoJourney(p,narrow());
     const pairKey=pose.world+':'+pose.pair;if(pairKey!==lastPairKey){lastPairKey=pairKey;onPair?.(p);}
     camera.position.fromArray(pose.position);look.fromArray(pose.target);
+    corridorLighting.update(camera,elapsed/1000);
     smoothedPointer.lerp(pointer,1-Math.exp(-elapsed*.007));
     if(!reduced){look.x+=smoothedPointer.x*.16;look.y-=smoothedPointer.y*.08;}
     previousRotation.copy(camera.quaternion);camera.lookAt(look);desiredRotation.copy(camera.quaternion);
