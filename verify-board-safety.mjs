@@ -6,8 +6,9 @@ assert.match(js,/object\.material\.transparent=true/,'Transparent render pass mu
 assert.match(js,/object\.material\.depthTest=false/);
 assert.match(js,/object\.renderOrder=BOARD_RENDER_BASE/);
 assert.match(js,/intersection\(a\.rect,b\.rect\)/,'Overlapping boards must be culled');
-const photos=pairedStops.flat(2).map(f=>f.photo);
-assert.equal(photos.length,28);
+const photos=pairedStops.flat(2).filter(Boolean).map(f=>f.photo);
+assert.equal(photos.length,18);
+assert.equal(new Set(pairedStops.flat(2).filter(Boolean).map(f=>f.title)).size,photos.length);
 assert.equal(new Set(photos).size,photos.length,'No repeated board images allowed');
 for(const photo of photos)assert.ok(fs.existsSync('./dist/assets/'+photo),photo);
-console.log('PASS: 28 unique image files; late transparent rendering; inter-board collision guard');
+console.log('PASS: 18 unique titled boards; late transparent rendering; inter-board collision guard');

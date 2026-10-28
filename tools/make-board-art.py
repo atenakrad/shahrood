@@ -196,118 +196,13 @@ def overlay_gradient(im,mode):
  arr=np.clip(arr*shade,0,255).astype('uint8')
  return Image.fromarray(arr)
 
+# User-selected replacements are preserved when rebuilding the gallery.
+USER_SUPPLIED_BOARDS={0,1,3,4,5,6,7,8,9,10,12,13,14,17,20,22,23,24,25}
+
 def create_board(index,spec):
- topic,src,design,v,label=spec
- base=cover(Image.open(AS/src),*SIZE,v)
- base=overlay_gradient(base,design)
- if src=='recycling.jpg':base=ImageEnhance.Color(base).enhance(.86)
- if src=='produce.jpg':base=ImageEnhance.Color(base).enhance(.92)
- ui=Image.new('RGBA',SIZE,(0,0,0,0));d=ImageDraw.Draw(ui,'RGBA')
- w,h=SIZE; teal=(151,246,218,255);gold=(252,205,123,255)
- # Cinema-inspired subtle top strip. A consistent frame keeps the boards part of one gallery.
- d.rectangle((0,0,w,11),fill=(209,175,109,255))
- d.rectangle((0,h-11,w,h),fill=(209,175,109,255))
- d.rounded_rectangle((52,56,345,105),17,fill=(11,38,42,223),outline=(229,218,160,128),width=2)
- d.text((76,69),label,font=ImageFont.truetype(BOLD,23),fill=(241,245,221,255))
- accent=gold if design in ('coin','heritage','events','memorial') else teal
- if design=='landscape':
-  # show the real place nearly unobstructed, subtle map locator only
-  rounded(d,(w-270,h-192,w-62,h-58),26,fill=(9,44,45,215),outline=(155,238,214,145))
-  icon(d,'map',w-165,h-129,43,accent)
- elif design=='heritage':
-  # Architectural picture fills the board; AR markers indicate discoverable stories.
-  for xx,yy in [(390,320),(815,555),(1170,345)]:
-   d.ellipse((xx-46,yy-46,xx+46,yy+46),outline=accent,width=5)
-   d.ellipse((xx-9,yy-9,xx+9,yy+9),fill=accent)
-   d.arc((xx-69,yy-69,xx+69,yy+69),35,255,fill=accent,width=3)
-  rounded(d,(w-500,h-205,w-57,h-67),20,fill=(8,38,40,223),outline=accent,width=2)
-  icon(d,'heritage',w-435,h-137,42,accent)
-  for k in range(3):rounded(d,(w-358,h-165+k*30,w-100-k*19,h-158+k*30),3,fill=(180,223,205,170))
- elif design in ('assistant','payments'):
-  draw_phone(d,w-605,126,472,832,accent,design,index)
-  card(d,(60,555,540,910),(9,31,41,230),radius=28)
-  icon(d,design,162,655,71,accent)
-  for k in range(5):rounded(d,(286,620+k*53,482-(k%3)*33,629+k*53),4,fill=(181,235,224,190))
- elif design=='report':
-  # An in-scene report pin plus a large phone with issue-tracking conversation.
-  d.ellipse((330,300,490,460),outline=accent,width=9)
-  icon(d,'report',410,370,76,accent)
-  draw_phone(d,w-615,130,465,825,accent,'report',index)
- elif design in ('map','wayfinding','parking','transport'):
-  bw=675 if design!='transport' else 585
-  draw_mini_map(d,(w-bw-66,180,w-66,855),accent,index)
-  icon(d,'parking' if design=='parking' else 'map',w-bw+75,270,51,accent)
-  if design in ('transport','parking'):
-   rounded(d,(110,640,720,918),33,fill=(10,38,43,228),outline=(142,238,207,112))
-   icon(d,design,241,773,90,accent)
-   for i in range(5):rounded(d,(395,690+i*37,652-(i%3)*49,699+i*37),4,fill=(165,219,218,168))
- elif design=='tree':
-  d.ellipse((330,170,1050,890),outline=(103,254,211,163),width=12)
-  d.arc((300,139,1080,920),-70,70,fill=accent,width=7)
-  d.arc((300,139,1080,920),110,210,fill=accent,width=7)
-  card(d,(1000,200,1515,836),(13,45,43,222))
-  icon(d,'tree',1122,343,92,accent)
-  for k in range(6):rounded(d,(1230,325+k*65,1478-(k%3)*28,335+k*65),4,fill=(173,229,212,160))
-  # patterned tag resembling QR, not a functional QR code
-  for j in range(9):
-   for k in range(9):
-    if (j*13+k*11+index)%4==0:d.rectangle((1050+j*16,600+k*16,1061+j*16,611+k*16),fill=accent)
- elif design=='recycle':
-  card(d,(900,165,1513,875),(10,46,42,237))
-  icon(d,'recycle',1215,490,220,accent)
-  for k in range(3):
-   rounded(d,(965,748+k*31,1460-k*52,761+k*31),4,fill=(151,220,184,182))
- elif design=='coin':
-  # Central gold coin and city-service data, two intentionally different compositions.
-  cx,cy=(1050,475) if v%2 else (870,510)
-  for r in [300,250,210]: d.ellipse((cx-r,cy-r,cx+r,cy+r),outline=(246,206,118,62),width=10)
-  d.ellipse((cx-174,cy-174,cx+174,cy+174),fill=(82,63,28,225),outline=gold,width=12)
-  icon(d,'coin',cx,cy,155,gold)
-  card(d,(w-550,785,w-72,946),(14,43,43,225),outline=(231,205,153,130))
-  for k in range(3):rounded(d,(w-494,824+k*39,w-112-k*50,833+k*39),4,fill=(245,216,161,178))
- elif design=='memorial':
-  # Heritage architecture and calm respectful symbolism (illustrative, NOT photo of cemetery).
-  shade=Image.new('RGBA',SIZE,(0,0,0,0));dd=ImageDraw.Draw(shade,'RGBA')
-  dd.rectangle((800,0,w,h),fill=(14,34,30,120));ui=Image.alpha_composite(ui,shade);d=ImageDraw.Draw(ui,'RGBA')
-  card(d,(920,160,1515,885),(15,47,40,225))
-  icon(d,'memorial',1220,430,190,(230,209,159,255))
-  for k in range(5):rounded(d,(1000,660+k*37,1440-k*50,670+k*37),5,fill=(191,218,196,143))
- elif design=='reservation':
-  draw_phone(d,1005,115,445,833,accent,'reservation',index)
- elif design=='events':
-  card(d,(112,670,835,940),(11,38,42,223))
-  icon(d,'events',255,803,95,gold)
-  for k in range(4):rounded(d,(402,724+k*44,765-k*45,735+k*44),5,fill=(247,216,163,185))
- elif design in ('market','produce'):
-  draw_phone(d,w-612,118,480,836,accent,design,index)
- elif design=='learning':
-  draw_phone(d,w-555,123,431,832,accent,'learning',index)
- elif design in ('operations','analytics'):
-  if design=='analytics':
-   d.rounded_rectangle((35,145,1565,944),34,fill=(7,23,39,250),outline=(87,177,191,150),width=3)
-   draw_mini_map(d,(87,204,1010,856),accent,index)
-   card(d,(1035,204,1507,856),(10,39,53,247))
-   icon(d,'analytics',1280,316,100,accent)
-   for k in range(6):
-    yy=470+k*56
-    rounded(d,(1085,yy,1445-(k%3)*26,yy+17),5,fill=(119,212,216,176))
-   return Image.alpha_composite(base.convert('RGBA'),ui).convert('RGB')
-  bw=850 if design=='operations' else 1040
-  bx=w-bw-80
-  card(d,(bx,180,w-80,859),(7,29,39,241),outline=(146,207,214,125))
-  icon(d,'operations',bx+122,290,62,accent)
-  for k in range(5):
-   y=395+k*77;rounded(d,(bx+45,y,w-132,y+53),12,fill=(26,59,70,250))
-   rounded(d,(bx+66,y+15,bx+440,y+27),4,fill=(157,214,213,166))
-   rounded(d,(w-440,y+14,w-190-(k%3)*45,y+27),4,fill=accent)
-  for i,val in enumerate([.35,.68,.47,.85,.59,.93]):
-   x=bx+80+i*111; d.rectangle((x,837-val*143,x+54,837),fill=(94,202,182,200))
-  if design=='analytics':
-   d.polygon([(0,0),(w*.36,0),(w*.29,h),(0,h)],fill=(9,35,42,145))
- else:
-  card(d,(900,190,1530,850),(13,45,51,225));icon(d,design,1200,520,166,accent)
- # Blend accent/safety margin: never include a frame or caption within image.
- return Image.alpha_composite(base.convert('RGBA'),ui).convert('RGB')
+ if index in USER_SUPPLIED_BOARDS:
+  return Image.open(AS/f'board-{index:02d}.jpg').convert('RGB')
+ return Image.open(AS/spec[1]).convert('RGB')
 
 def main():
  manifests=[]
@@ -315,7 +210,7 @@ def main():
   im=create_board(index,spec)
   fn=f'board-{index:02d}.jpg'
   im.save(AS/fn,quality=89,subsampling=0,optimize=True)
-  manifests.append({'file':fn,'topic':spec[0],'photo_source':spec[1],'art_direction':spec[2],'caption':spec[4], 'source_type':'mixed: curated photo or user-supplied concept image plus original topical graphic overlays'})
+  manifests.append({'file':fn,'topic':spec[0],'photo_source':fn if index in USER_SUPPLIED_BOARDS else spec[1],'art_direction':'unobstructed','caption':spec[4], 'source_type':'user-supplied image; no added overlays' if index in USER_SUPPLIED_BOARDS else 'original source image; no added overlays'})
  (ROOT/'BOARD-IMAGE-MANIFEST.json').write_text(json.dumps(manifests,ensure_ascii=False,indent=2),encoding='utf8')
  # Gallery QA sheet. Not loaded at runtime.
  contact=Image.new('RGB',(4*320,7*238),'#15221f');dr=ImageDraw.Draw(contact)

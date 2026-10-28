@@ -16,9 +16,10 @@ export function protectPhotoFrame(frame,world,pair,side){
   if(!object.isMesh)return;
   // Keep the photo material instance untouched: TextureLoader updates it later.
   if(object.geometry.type!=='PlaneGeometry')object.material=object.material.clone();
-  const photo=object.geometry.type==='PlaneGeometry';
+  const photo=object.geometry.type==='PlaneGeometry'&&!object.userData.boardLabel;
   if(photo)frame.userData.photo=object;
-  object.userData.photoLayer=photo?10:layer++;
+  // Draw the green title face after its gold backing, regardless of traversal order.
+  object.userData.photoLayer=object.userData.boardLabel?20:photo?10:layer++;
   object.material.transparent=true; // critical: render AFTER all transparent foliage
   object.material.opacity=1;
   object.material.depthTest=false;

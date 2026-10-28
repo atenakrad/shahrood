@@ -1,7 +1,7 @@
 import {features,coin,worlds as categories} from './data.js';
 export {categories};
 export const stationPhotos={
-assistant:['board-27.jpg','تصویر مفهومی اختصاصی assistant · شاهرود+'],
+assistant:['board-04.jpg','تصویر مفهومی اختصاصی assistant · شاهرود+'],
 services:['board-06.jpg','تصویر مفهومی اختصاصی services · شاهرود+'],
 report:['board-05.jpg','تصویر مفهومی اختصاصی report · شاهرود+'],
 trees:['board-08.jpg','تصویر مفهومی اختصاصی trees · شاهرود+'],
@@ -19,7 +19,7 @@ market:['board-21.jpg','تصویر مفهومی اختصاصی market · شاه�
 logistics:['board-23.jpg','تصویر مفهومی اختصاصی logistics · شاهرود+'],
 cemetery:['board-07.jpg','تصویر مفهومی اختصاصی cemetery · شاهرود+'],
 operations:['board-24.jpg','تصویر مفهومی اختصاصی operations · شاهرود+'],
-heritage:['board-19.jpg','تصویر مفهومی اختصاصی heritage · شاهرود+']
+heritage:['board-01.jpg','تصویر مفهومی اختصاصی heritage · شاهرود+']
 };
 const ordered=[...features.slice(0,5),coin,...features.slice(5)];
 export const stations=[

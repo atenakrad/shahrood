@@ -2,225 +2,225 @@
   {
     "file": "board-00.jpg",
     "topic": "tourism",
-    "photo_source": "user-promenade.jpg",
-    "art_direction": "wayfinding",
+    "photo_source": "board-00.jpg",
+    "art_direction": "unobstructed",
     "caption": "SMART TOURISM",
-    "source_type": "mixed: curated photo or user-supplied concept image plus original topical graphic overlays"
+    "source_type": "user-supplied image; no added overlays"
   },
   {
     "file": "board-01.jpg",
     "topic": "heritage",
-    "photo_source": "bastam.jpg",
-    "art_direction": "heritage",
+    "photo_source": "board-01.jpg",
+    "art_direction": "unobstructed",
     "caption": "HERITAGE / AR",
-    "source_type": "mixed: curated photo or user-supplied concept image plus original topical graphic overlays"
+    "source_type": "user-supplied image; no added overlays"
   },
   {
     "file": "board-02.jpg",
     "topic": "tourism",
     "photo_source": "abr.jpg",
-    "art_direction": "landscape",
+    "art_direction": "unobstructed",
     "caption": "CLOUD FOREST",
-    "source_type": "mixed: curated photo or user-supplied concept image plus original topical graphic overlays"
+    "source_type": "original source image; no added overlays"
   },
   {
     "file": "board-03.jpg",
     "topic": "guides",
-    "photo_source": "yaghmaei.jpg",
-    "art_direction": "wayfinding",
+    "photo_source": "board-03.jpg",
+    "art_direction": "unobstructed",
     "caption": "LOCAL GUIDES",
-    "source_type": "mixed: curated photo or user-supplied concept image plus original topical graphic overlays"
+    "source_type": "user-supplied image; no added overlays"
   },
   {
     "file": "board-04.jpg",
     "topic": "assistant",
-    "photo_source": "user-control-room.jpg",
-    "art_direction": "assistant",
+    "photo_source": "board-04.jpg",
+    "art_direction": "unobstructed",
     "caption": "CITIZEN ASSISTANT",
-    "source_type": "mixed: curated photo or user-supplied concept image plus original topical graphic overlays"
+    "source_type": "user-supplied image; no added overlays"
   },
   {
     "file": "board-05.jpg",
     "topic": "report",
-    "photo_source": "user-promenade.jpg",
-    "art_direction": "report",
+    "photo_source": "board-05.jpg",
+    "art_direction": "unobstructed",
     "caption": "CITIZEN REPORT",
-    "source_type": "mixed: curated photo or user-supplied concept image plus original topical graphic overlays"
+    "source_type": "user-supplied image; no added overlays"
   },
   {
     "file": "board-06.jpg",
     "topic": "services",
-    "photo_source": "digital.jpg",
-    "art_direction": "payments",
+    "photo_source": "board-06.jpg",
+    "art_direction": "unobstructed",
     "caption": "CIVIC SERVICES",
-    "source_type": "mixed: curated photo or user-supplied concept image plus original topical graphic overlays"
+    "source_type": "user-supplied image; no added overlays"
   },
   {
     "file": "board-07.jpg",
     "topic": "cemetery",
-    "photo_source": "yaghmaei.jpg",
-    "art_direction": "memorial",
+    "photo_source": "board-07.jpg",
+    "art_direction": "unobstructed",
     "caption": "MEMORIAL SERVICES",
-    "source_type": "mixed: curated photo or user-supplied concept image plus original topical graphic overlays"
+    "source_type": "user-supplied image; no added overlays"
   },
   {
     "file": "board-08.jpg",
     "topic": "trees",
-    "photo_source": "forest.jpg",
-    "art_direction": "tree",
+    "photo_source": "board-08.jpg",
+    "art_direction": "unobstructed",
     "caption": "TREE IDENTITY",
-    "source_type": "mixed: curated photo or user-supplied concept image plus original topical graphic overlays"
+    "source_type": "user-supplied image; no added overlays"
   },
   {
     "file": "board-09.jpg",
     "topic": "waste",
-    "photo_source": "user-promenade.jpg",
-    "art_direction": "recycle",
+    "photo_source": "board-09.jpg",
+    "art_direction": "unobstructed",
     "caption": "WASTE MANAGEMENT",
-    "source_type": "mixed: curated photo or user-supplied concept image plus original topical graphic overlays"
+    "source_type": "user-supplied image; no added overlays"
   },
   {
     "file": "board-10.jpg",
     "topic": "coin",
-    "photo_source": "user-promenade.jpg",
-    "art_direction": "coin",
+    "photo_source": "board-10.jpg",
+    "art_direction": "unobstructed",
     "caption": "CITY REWARDS",
-    "source_type": "mixed: curated photo or user-supplied concept image plus original topical graphic overlays"
+    "source_type": "user-supplied image; no added overlays"
   },
   {
     "file": "board-11.jpg",
     "topic": "trees",
     "photo_source": "yaghmaei.jpg",
-    "art_direction": "tree",
+    "art_direction": "unobstructed",
     "caption": "URBAN GREENERY",
-    "source_type": "mixed: curated photo or user-supplied concept image plus original topical graphic overlays"
+    "source_type": "original source image; no added overlays"
   },
   {
     "file": "board-12.jpg",
     "topic": "map",
-    "photo_source": "shahvar.jpg",
-    "art_direction": "map",
+    "photo_source": "board-12.jpg",
+    "art_direction": "unobstructed",
     "caption": "LOCAL CITY MAP",
-    "source_type": "mixed: curated photo or user-supplied concept image plus original topical graphic overlays"
+    "source_type": "user-supplied image; no added overlays"
   },
   {
     "file": "board-13.jpg",
     "topic": "transport",
-    "photo_source": "transit.jpg",
-    "art_direction": "transport",
+    "photo_source": "board-13.jpg",
+    "art_direction": "unobstructed",
     "caption": "PUBLIC TRANSPORT",
-    "source_type": "mixed: curated photo or user-supplied concept image plus original topical graphic overlays"
+    "source_type": "user-supplied image; no added overlays"
   },
   {
     "file": "board-14.jpg",
     "topic": "parking",
-    "photo_source": "parking.jpg",
-    "art_direction": "parking",
+    "photo_source": "board-14.jpg",
+    "art_direction": "unobstructed",
     "caption": "SMART PARKING",
-    "source_type": "mixed: curated photo or user-supplied concept image plus original topical graphic overlays"
+    "source_type": "user-supplied image; no added overlays"
   },
   {
     "file": "board-15.jpg",
     "topic": "transport",
     "photo_source": "user-control-room.jpg",
-    "art_direction": "transport",
+    "art_direction": "unobstructed",
     "caption": "MOBILITY DATA",
-    "source_type": "mixed: curated photo or user-supplied concept image plus original topical graphic overlays"
+    "source_type": "original source image; no added overlays"
   },
   {
     "file": "board-16.jpg",
     "topic": "tourism",
     "photo_source": "forest.jpg",
-    "art_direction": "landscape",
+    "art_direction": "unobstructed",
     "caption": "NATURE JOURNEYS",
-    "source_type": "mixed: curated photo or user-supplied concept image plus original topical graphic overlays"
+    "source_type": "original source image; no added overlays"
   },
   {
     "file": "board-17.jpg",
     "topic": "guides",
-    "photo_source": "bastam.jpg",
-    "art_direction": "wayfinding",
+    "photo_source": "board-17.jpg",
+    "art_direction": "unobstructed",
     "caption": "GUIDED HISTORY",
-    "source_type": "mixed: curated photo or user-supplied concept image plus original topical graphic overlays"
+    "source_type": "user-supplied image; no added overlays"
   },
   {
     "file": "board-18.jpg",
     "topic": "spaces",
     "photo_source": "user-culture.jpg",
-    "art_direction": "reservation",
+    "art_direction": "unobstructed",
     "caption": "PUBLIC SPACES",
-    "source_type": "mixed: curated photo or user-supplied concept image plus original topical graphic overlays"
+    "source_type": "original source image; no added overlays"
   },
   {
     "file": "board-19.jpg",
     "topic": "heritage",
     "photo_source": "heritage-generated.jpg",
-    "art_direction": "heritage",
+    "art_direction": "unobstructed",
     "caption": "DIGITAL HERITAGE",
-    "source_type": "mixed: curated photo or user-supplied concept image plus original topical graphic overlays"
+    "source_type": "original source image; no added overlays"
   },
   {
     "file": "board-20.jpg",
     "topic": "events",
-    "photo_source": "user-culture.jpg",
-    "art_direction": "events",
+    "photo_source": "board-20.jpg",
+    "art_direction": "unobstructed",
     "caption": "CULTURAL EVENTS",
-    "source_type": "mixed: curated photo or user-supplied concept image plus original topical graphic overlays"
+    "source_type": "user-supplied image; no added overlays"
   },
   {
     "file": "board-21.jpg",
     "topic": "market",
     "photo_source": "craft.jpg",
-    "art_direction": "market",
+    "art_direction": "unobstructed",
     "caption": "LOCAL HANDICRAFTS",
-    "source_type": "mixed: curated photo or user-supplied concept image plus original topical graphic overlays"
+    "source_type": "original source image; no added overlays"
   },
   {
     "file": "board-22.jpg",
     "topic": "learning",
-    "photo_source": "learning.jpg",
-    "art_direction": "learning",
+    "photo_source": "board-22.jpg",
+    "art_direction": "unobstructed",
     "caption": "CULTURAL LEARNING",
-    "source_type": "mixed: curated photo or user-supplied concept image plus original topical graphic overlays"
+    "source_type": "user-supplied image; no added overlays"
   },
   {
     "file": "board-23.jpg",
     "topic": "logistics",
-    "photo_source": "user-culture.jpg",
-    "art_direction": "produce",
+    "photo_source": "board-23.jpg",
+    "art_direction": "unobstructed",
     "caption": "LOCAL FARM MARKET",
-    "source_type": "mixed: curated photo or user-supplied concept image plus original topical graphic overlays"
+    "source_type": "user-supplied image; no added overlays"
   },
   {
     "file": "board-24.jpg",
     "topic": "operations",
-    "photo_source": "user-control-room.jpg",
-    "art_direction": "operations",
+    "photo_source": "board-24.jpg",
+    "art_direction": "unobstructed",
     "caption": "CITY OPERATIONS",
-    "source_type": "mixed: curated photo or user-supplied concept image plus original topical graphic overlays"
+    "source_type": "user-supplied image; no added overlays"
   },
   {
     "file": "board-25.jpg",
     "topic": "coin",
-    "photo_source": "digital.jpg",
-    "art_direction": "coin",
+    "photo_source": "board-25.jpg",
+    "art_direction": "unobstructed",
     "caption": "CIVIC REWARDS",
-    "source_type": "mixed: curated photo or user-supplied concept image plus original topical graphic overlays"
+    "source_type": "user-supplied image; no added overlays"
   },
   {
     "file": "board-26.jpg",
     "topic": "operations",
     "photo_source": "user-control-room.jpg",
-    "art_direction": "analytics",
+    "art_direction": "unobstructed",
     "caption": "MUNICIPAL WORKFLOW",
-    "source_type": "mixed: curated photo or user-supplied concept image plus original topical graphic overlays"
+    "source_type": "original source image; no added overlays"
   },
   {
     "file": "board-27.jpg",
     "topic": "assistant",
     "photo_source": "learning.jpg",
-    "art_direction": "assistant",
+    "art_direction": "unobstructed",
     "caption": "DIGITAL HELP DESK",
-    "source_type": "mixed: curated photo or user-supplied concept image plus original topical graphic overlays"
+    "source_type": "original source image; no added overlays"
   }
 ]

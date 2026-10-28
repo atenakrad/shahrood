@@ -111,6 +111,15 @@ export function createScene(canvas,onFeature,onPair){
     return tree;
   }
   function box(g,mat,size,pos,ry=0){const m=new THREE.Mesh(boxGeo,mat);m.scale.set(...size);m.position.set(...pos);m.rotation.y=ry;g.add(m);return m;}
+  function stoneBox(g,size,pos){
+    // Match the column's stone pattern scale, including on long connecting beams.
+    const geometry=new THREE.BoxGeometry(...size),uv=geometry.attributes.uv;
+    const [w,h,d]=size,faces=[[d,h],[d,h],[w,d],[w,d],[w,h],[w,h]];
+    faces.forEach(([width,height],face)=>{
+      for(let i=face*4;i<face*4+4;i++)uv.setXY(i,uv.getX(i)*width/(2*Math.PI*.83),uv.getY(i)*height/9);
+    });
+    const m=new THREE.Mesh(geometry,columnMat);m.position.set(...pos);g.add(m);return m;
+  }
   function cylinder(g,mat,r,h,pos){const m=new THREE.Mesh(cylGeo,mat);m.scale.set(r,h,r);m.position.set(...pos);g.add(m);return m;}
   function path(g,pts,mat,r=.06){const curve=new THREE.CatmullRomCurve3(pts.map(p=>new THREE.Vector3(...p)));const mesh=new THREE.Mesh(new THREE.TubeGeometry(curve,100,r,6,false),mat);g.add(mesh);return curve;}
   const cloudMat=new THREE.MeshLambertMaterial({color:0xf5fbff,transparent:true,opacity:.78,depthWrite:false});
@@ -118,7 +127,6 @@ export function createScene(canvas,onFeature,onPair){
   mountainTexture.colorSpace=THREE.SRGBColorSpace;
   mountainTexture.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());
   const mountainMat=new THREE.MeshBasicMaterial({map:mountainTexture,transparent:true,alphaTest:.12,side:THREE.DoubleSide,depthWrite:true});
-  const buildingMat=new THREE.MeshLambertMaterial({color:0xb9b8aa,roughness:.95});
   function cloud(x,y,z,s=1){const g=new THREE.Group();g.position.set(x,y,z);for(const p of [[0,0,0],[2.2,.25,.2],[-2,.05,.1],[.8,.65,-.3],[-.8,.4,-.25]]){const m=new THREE.Mesh(sphereGeo,cloudMat);m.scale.set(2.7*s,1.05*s,1.25*s);m.position.set(p[0]*s,p[1]*s,p[2]*s);g.add(m)}scene.add(g);return g;}
   // Distant photo-cutout mountains replace the old geometric pyramid cones.
   // Their silhouettes sit beyond the promenade, not inside the photo/frame lanes.
@@ -129,7 +137,7 @@ export function createScene(canvas,onFeature,onPair){
     scene.add(m);
     return m;
   }
-  function skyline(x,z,seed){const g=new THREE.Group();g.position.set(x,0,z);for(let i=0;i<7;i++){const w=4+rand(seed+i)*6,h=5+rand(seed+i+40)*13;box(g,buildingMat,[w,h,5],[(-3+i)*7,h/2,rand(seed+i+80)*5]);}scene.add(g);}
+  function skyline(x,z,seed){const g=new THREE.Group();g.position.set(x,0,z);for(let i=0;i<7;i++){const w=4+rand(seed+i)*6,h=5+rand(seed+i+40)*13;stoneBox(g,[w,h,5],[(-3+i)*7,h/2,rand(seed+i+80)*5]);}scene.add(g);}
   function arch(g,x,z,width=22,height=19,mat=stone){
     const radius=width/2,inside=radius-.65,spring=height-radius;
     const sh=new THREE.Shape();sh.moveTo(-radius,0);sh.lineTo(-radius,spring);sh.absarc(0,spring,radius,Math.PI,0,true);sh.lineTo(radius,0);sh.lineTo(inside,0);sh.lineTo(inside,spring);sh.absarc(0,spring,inside,0,Math.PI,false);sh.lineTo(-inside,0);sh.closePath();
@@ -190,14 +198,26 @@ export function createScene(canvas,onFeature,onPair){
       box(g,bronze,[.09,.15,109],[side*10.1,.16,-43]);
       box(g,bronze,[.09,.15,109],[side*12.9,.16,-43]);
       const columnCount=chapter===0?5:chapter===2?3:chapter===4?6:4;
+      const columnZ=Array.from({length:columnCount},(_,j)=>chapter===0?5-j*24:5-j*(100/(columnCount-1)));
+      // Each row continues to the first support in the next district. End the
+      // final row on its last capital rather than leaving an unsupported tail.
+      const rowFront=columnZ[0]+1.6;
+      const rowBack=chapter<worlds.length-1?5-110:columnZ.at(-1)-1.6;
+      const rowLength=rowFront-rowBack,rowCenter=(rowFront+rowBack)/2;
+      // Ground is at y=-.15 outside the central paving. Embed the footing in
+      // that ground and overlap the plinths so there is no floating base.
+      const footing=stoneBox(g,[3.2,.3,rowLength],[side*24,-.1,rowCenter]);
+      footing.receiveShadow=true;
+      // One continuous architrave replaces the isolated short beam stubs.
+      const beam=stoneBox(g,[2.05,1.8,rowLength],[side*24,11.48,rowCenter]);
+      beam.castShadow=true;beam.receiveShadow=true;
       for(let j=0;j<columnCount;j++){
-        const z=chapter===0?5-j*24:5-j*(100/Math.max(1,columnCount-1));
-        const plinth=box(g,terracotta,[2.65,.6,2.65],[side*24,.3,z]);plinth.receiveShadow=true;
-        const shaft=cylinder(g,columnMat,.83,9,[side*24,5.05,z]);shaft.castShadow=true;
-        cylinder(g,ivory,1.08,.35,[side*24,9.55,z]);
-        cylinder(g,bronze,1.12,.19,[side*24,9.82,z]);
-        const capital=box(g,stone,[3.2,.55,3.2],[side*24,10.2,z]);capital.castShadow=true;
-        box(g,stone,[2.05,1.8,15.5],[side*24,11.5,z-7.8]).castShadow=true;
+        const z=columnZ[j];
+        const plinth=stoneBox(g,[2.65,.6,2.65],[side*24,.3,z]);plinth.receiveShadow=true;
+        const shaft=cylinder(g,columnMat,.83,9,[side*24,5.08,z]);shaft.castShadow=true;
+        cylinder(g,columnMat,1.08,.35,[side*24,9.725,z]);
+        cylinder(g,bronze,1.12,.19,[side*24,9.975,z]);
+        const capital=stoneBox(g,[3.2,.55,3.2],[side*24,10.325,z]);capital.castShadow=true;
         // Luminous recessed tile panels alternate along each arcade.
         const tile=box(g,panelTileMat,[.14,3.9,4.2],[side*22.75,6,z-6]);
         tile.rotation.y=side*.05;
@@ -247,9 +267,9 @@ export function createScene(canvas,onFeature,onPair){
         box(g,stone,[10,.7,12],[side*35,.35,-12]).receiveShadow=true;
         for(let k=0;k<3;k++){
           cylinder(g,columnMat,.52,11,[side*(31+k*4),5.9,-18]);
-          box(g,stone,[1.8,.55,13],[side*(31+k*4),11.5,-15]);
+          stoneBox(g,[1.8,.55,13],[side*(31+k*4),11.5,-15]);
         }
-        box(g,deepGreen,[11,5,.65],[side*35,5,-25]);
+        stoneBox(g,[11,5,.65],[side*35,5,-25]);
         box(g,turquoise,[10,.13,2.8],[side*35,7.6,-25]);
       }
       for(let j=0;j<8;j++){
@@ -265,7 +285,7 @@ export function createScene(canvas,onFeature,onPair){
     }else if(chapter===4){
       // Heritage district: layered brick screen, niches and tiled dome silhouettes.
       for(const side of [-1,1])for(let j=0;j<5;j++){
-        const z=3-j*21;box(g,terracotta,[6,12,12],[side*37,6,z]);
+        const z=3-j*21;stoneBox(g,[6,12,12],[side*37,6,z]);
         const niche=arch(g,side*37,z+6.4,5.5,8,turquoise);
         niche.scale.set(.7,.7,.7);
       }
@@ -273,16 +293,10 @@ export function createScene(canvas,onFeature,onPair){
       // Bazaar: warm covered stalls create a distinct rhythm from the heritage court.
       for(const side of [-1,1])for(let j=0;j<7;j++){
         const z=7-j*15,x=side*34;
-        box(g,deepGreen,[9,4,7],[x,2,z]);
+        stoneBox(g,[9,4,7],[x,2,z]);
         box(g,terracotta,[9.8,.5,8],[x,4.5,z]);
         box(g,goldGlow,[8,.09,.12],[x,4.15,z+4.1]);
       }
-    }else if(chapter===6){
-      // Future chapter: calm circular forum with an illuminated architectural crown.
-      const stage=new THREE.Mesh(new THREE.CylinderGeometry(15,17,.5,64),stone);
-      stage.position.set(0,.2,-53);stage.receiveShadow=true;g.add(stage);
-      const crown=new THREE.Mesh(new THREE.TorusGeometry(14,.2,8,96),goldGlow);
-      crown.position.set(0,16,-53);crown.rotation.x=Math.PI/2;g.add(crown);
     }
     // Photographic ornamental planters sit in the actual 3D world, staggered
     // outside the walking path. Shared geometry/texture keeps memory usage low.
@@ -297,8 +311,8 @@ export function createScene(canvas,onFeature,onPair){
       }
     }
   }
-  function signTexture(title,subtitle){const c=document.createElement('canvas');c.width=1200;c.height=300;const ctx=c.getContext('2d');ctx.fillStyle='#102b24';ctx.fillRect(0,0,1200,300);ctx.strokeStyle='#f0d09a';ctx.lineWidth=5;ctx.strokeRect(18,18,1164,264);ctx.direction='rtl';ctx.textAlign='center';ctx.textBaseline='middle';ctx.shadowColor='rgba(0,0,0,.65)';ctx.shadowBlur=8;ctx.fillStyle='#fffdf2';ctx.font='700 60px Vazir, Tahoma';ctx.fillText(title,600,116);ctx.shadowBlur=5;ctx.fillStyle='#f4d9a7';ctx.font='700 32px Vazir, Tahoma';ctx.fillText(subtitle,600,205);const texture=new THREE.CanvasTexture(c);texture.colorSpace=THREE.SRGBColorSpace;textures.push(texture);return texture;}
-  function placard(g,title,sub,pos,width=10,feature=null){const group=new THREE.Group();group.position.set(...pos);group.rotation.y=.12;g.add(group);const screen=new THREE.Mesh(new THREE.PlaneGeometry(width,width/4),new THREE.MeshBasicMaterial({map:signTexture(title,sub)}));screen.position.z=.09;group.add(screen);box(group,bronze,[width+.16,width/4+.16,.12],[0,0,-.02]);if(feature){screen.userData.feature=feature;hitTargets.push(screen);}return group;}
+  function signTexture(title,subtitle){const c=document.createElement('canvas');c.width=1200;c.height=300;const ctx=c.getContext('2d');ctx.fillStyle='#102b24';ctx.fillRect(0,0,1200,300);ctx.strokeStyle='#f0d09a';ctx.lineWidth=5;ctx.strokeRect(18,18,1164,264);ctx.direction='rtl';ctx.textAlign='center';ctx.textBaseline='middle';ctx.shadowColor='rgba(0,0,0,.65)';ctx.shadowBlur=8;ctx.fillStyle='#fffdf2';ctx.font='700 60px Vazir, Tahoma';ctx.fillText(title,600,116,1080);ctx.shadowBlur=5;ctx.fillStyle='#f4d9a7';ctx.font='700 32px Vazir, Tahoma';ctx.fillText(subtitle,600,205,1080);const texture=new THREE.CanvasTexture(c);texture.colorSpace=THREE.SRGBColorSpace;textures.push(texture);return texture;}
+  function placard(g,title,sub,pos,width=10,feature=null){const group=new THREE.Group();group.position.set(...pos);group.rotation.y=.12;g.add(group);const screen=new THREE.Mesh(new THREE.PlaneGeometry(width,width/4),new THREE.MeshBasicMaterial({map:signTexture(title,sub)}));screen.userData.boardLabel=true;screen.position.z=.09;group.add(screen);box(group,bronze,[width+.16,width/4+.16,.12],[0,0,-.02]);if(feature){screen.userData.feature=feature;hitTargets.push(screen);}return group;}
   const loader=new THREE.TextureLoader();
   function photograph(g,file,x,z,width=30,aspect=1.5){const group=new THREE.Group();group.position.set(x,10,z);group.rotation.y=x<0?.17:-.19;g.add(group);const h=width/aspect;
     box(group,stone,[width+.58,h+.58,.24],[0,0,-.36]).castShadow=true;
@@ -321,23 +335,25 @@ export function createScene(canvas,onFeature,onPair){
   // Road surfaces and edge lines continue through every environment.
   for(let i=0;i<7;i++){const z=worldStart(i);const g=new THREE.Group();g.position.z=z;scene.add(g);groups.push(g);pavilion(g,i);}
   // 00: a monumental gateway opens onto Shahrud's landscape.
-  {const g=groups[0];placard(g,'شاهرودِ فردا','از دل شهر، به سوی آینده',[-29,1.6,-20],9);}
+  {const g=groups[0];}
   // 01: a civic avenue, with service stations and readable in-world exhibits.
-  {const g=groups[1];for(let side of [-1,1])for(let i=0;i<11;i++){const x=side*(35+rand(i+35)*13),z=6-i*9,h=6+rand(i+92)*17;box(g,i%3===0?glass:stone,[6,h,6],[x,h/2,z]);for(let k=0;k<Math.floor(h/2.5);k++){box(g,glass,[5,.65,.08],[x,1.7+k*2.5,z+3.05]);}box(g,bronze,[6.3,.25,6.3],[x,h,z]);}arch(g,0,-10,22,20,bronze);placard(g,'شهر پاسخ‌گو','دستیار · گزارش · پیگیری',[-14,3,-8],10,'report');placard(g,'یک سؤال، یک مسیر روشن','کشف دستیار هوشمند',[-13,3,-65],10,'assistant');}
+  {const g=groups[1];for(let side of [-1,1])for(let i=0;i<11;i++){const x=side*(35+rand(i+35)*13),z=6-i*9,h=6+rand(i+92)*17;stoneBox(g,[6,h,6],[x,h/2,z]);for(let k=0;k<Math.floor(h/2.5);k++){box(g,glass,[5,.65,.08],[x,1.7+k*2.5,z+3.05]);}box(g,bronze,[6.3,.25,6.3],[x,h,z]);}arch(g,0,-10,22,20,bronze);}
   // 02: the route enters a woodland, with bridges, water and tree identities.
-  {const g=groups[2];box(g,glass,[7,.03,110],[-13,.02,-43]);for(let i=0;i<4;i++){const z=-i*27;box(g,stone,[25,.22,5],[-4,.25,z]);for(let side of [-1,1]){box(g,bronze,[.08,1.2,6],[side*8,.9,z]);}}placard(g,'زندگی سبز','هر درخت، یک هویت',[-12,3,-11],9,'trees');placard(g,'مشارکت، به شهر برمی‌گردد','کشف اعتبار شهروندی',[-12,3,-69],10,'coin');for(let i=0;i<5;i++){const ring=new THREE.Mesh(new THREE.TorusGeometry(13+i*1.1,.045,5,80,Math.PI),bronze);ring.position.set(0,2,-78-i*1.4);g.add(ring);}}
+  {const g=groups[2];box(g,glass,[7,.03,110],[-13,.02,-43]);for(let i=0;i<5;i++){const ring=new THREE.Mesh(new THREE.TorusGeometry(13+i*1.1,.045,5,80,Math.PI),bronze);ring.position.set(0,2,-78-i*1.4);g.add(ring);}}
   // 03: stations and an illuminated network surround a gently curving avenue.
-  {const g=groups[3];for(let side of [-1,1]){box(g,stone,[12,.4,80],[side*32,.15,-36]);for(let i=0;i<4;i++){const z=1-i*24;box(g,glass,[13,.3,10],[side*32,6,z]);cylinder(g,bronze,.13,6,[side*27,3,z]);cylinder(g,bronze,.13,6,[side*37,3,z]);}}for(let i=0;i<3;i++){const line=path(g,[[-26+i*4,2,-6],[-12,5,-25],[0,8,-46],[22,5,-75],[35,3,-100]],i===0?warm:light,.055);const orb=new THREE.Mesh(new THREE.SphereGeometry(.25,10,8),light);g.add(orb);moving.push({object:orb,curve:line,offset:i*.3});}placard(g,'شهر در حرکت','مقصد، مسیر، انتخاب',[-14,3,-9],10,'map');arch(g,0,-79,24,18,bronze);}
+  {const g=groups[3];for(let side of [-1,1]){box(g,stone,[12,.4,80],[side*32,.15,-36]);for(let i=0;i<4;i++){const z=1-i*24;box(g,glass,[13,.3,10],[side*32,6,z]);cylinder(g,bronze,.13,6,[side*27,3,z]);cylinder(g,bronze,.13,6,[side*37,3,z]);}}arch(g,0,-79,24,18,bronze);}
   // 04: brick arcades create a genuine passage into the heritage district.
-  {const g=groups[4];for(let j=0;j<6;j++){arch(g,0,7-j*16,24,22,stone);for(let side of [-1,1]){box(g,stone,[1,13,1.2],[side*12.6,6.5,-j*16]);box(g,glass,[.05,1.2,8],[side*12,2.3,-j*16]);}}const tower=cylinder(g,stone,2.4,28,[25,14,-53]);for(let h of [5,18,26])cylinder(g,bronze,2.6,.4,[25,h,-53]);const dome=new THREE.Mesh(new THREE.SphereGeometry(6,36,24,0,Math.PI*2,0,Math.PI/2),glass);dome.position.set(28,11,-79);g.add(dome);box(g,stone,[16,11,16],[28,5.5,-79]);placard(g,'بسطام؛ یک روایت زنده','گردشگری و تجربه محلی',[-11,3,-8],9,'tourism');placard(g,'از امروز تا دیروز','تور ۳۶۰ و روایت تاریخی',[-11,3,-63],9,'heritage');}
+  {const g=groups[4];for(let j=0;j<6;j++){arch(g,0,7-j*16,24,22,stone);for(let side of [-1,1]){box(g,stone,[1,13,1.2],[side*12.6,6.5,-j*16]);box(g,glass,[.05,1.2,8],[side*12,2.3,-j*16]);}}const tower=cylinder(g,columnMat,2.4,28,[25,14,-53]);for(let h of [5,18,26])cylinder(g,bronze,2.6,.4,[25,h,-53]);const dome=new THREE.Mesh(new THREE.SphereGeometry(6,36,24,0,Math.PI*2,0,Math.PI/2),glass);dome.position.set(28,11,-79);g.add(dome);stoneBox(g,[16,11,16],[28,5.5,-79]);}
   // 05: shaded market stalls and a cultural courtyard line the route.
-  {const g=groups[5];for(let side of [-1,1])for(let i=0;i<7;i++){const x=side*28,z=8-i*14;box(g,stone,[9,4,8],[x,2,z]);const canopy=new THREE.Mesh(new THREE.ConeGeometry(7,2,4),i%2?bronze:glass);canopy.rotation.y=Math.PI/4;canopy.position.set(x,5,z);g.add(canopy);box(g,warm,[7,.06,.08],[x,3.7,z+4.1]);}for(let j=0;j<5;j++){const z=-j*22;const c=path(g,[[-25,9,z],[-10,7,z-2],[0,6.5,z-2],[12,7,z-2],[25,9,z]],bronze,.025);for(let t=.1;t<1;t+=.1){const p=c.getPoint(t);const orb=new THREE.Mesh(new THREE.SphereGeometry(.13,8,6),warm);orb.position.copy(p);g.add(orb);}}placard(g,'اقتصاد زنده','رویداد، هنر و کسب‌وکار محلی',[-11,3,-8],9,'market');placard(g,'یک فضا؛ هزار فرصت','کشف رویدادهای شهر',[-11,3,-66],9,'events');}
+  {const g=groups[5];for(let side of [-1,1])for(let i=0;i<7;i++){const x=side*28,z=8-i*14;stoneBox(g,[9,4,8],[x,2,z]);const canopy=new THREE.Mesh(new THREE.ConeGeometry(7,2,4),i%2?bronze:glass);canopy.rotation.y=Math.PI/4;canopy.position.set(x,5,z);g.add(canopy);box(g,warm,[7,.06,.08],[x,3.7,z+4.1]);}for(let j=0;j<5;j++){const z=-j*22;const c=path(g,[[-25,9,z],[-10,7,z-2],[0,6.5,z-2],[12,7,z-2],[25,9,z]],bronze,.025);for(let t=.1;t<1;t+=.1){const p=c.getPoint(t);const orb=new THREE.Mesh(new THREE.SphereGeometry(.13,8,6),warm);orb.position.copy(p);g.add(orb);}}}
   // 06: the route arrives in a connected civic forum.
-  {const g=groups[6];for(let j=0;j<8;j++){const m=new THREE.Mesh(new THREE.TorusGeometry(15,.12,8,96),j%2?glass:bronze);m.position.set(0,10,-12-j*9);m.scale.y=.8;g.add(m);}for(let i=0;i<26;i++){const a=i/26*Math.PI*2;const p=new THREE.Vector3(Math.cos(a)*25,6+Math.sin(a*3)*3,-42+Math.sin(a)*22);const orb=new THREE.Mesh(new THREE.SphereGeometry(.3,12,8),light);orb.position.copy(p);g.add(orb);path(g,[[0,1,-42],[p.x*.5,12,p.z],[p.x,p.y,p.z]],bronze,.025);}placard(g,'یک شهر؛ یک تجربه','داده، خدمت و تصمیم‌سازی',[-14,3,-8],11,'operations');}
   // Two photographs flank the original continuous route in every district.
   pairedStops.forEach((pairs,i)=>pairs.forEach((pair,j)=>pair.forEach((feature,k)=>{
+    if(!feature)return;
     const side=k===0?-1:1;
     const frame=photograph(groups[i],feature.photo,side*18,-34-j*55-(side<0?16:0),13,1.5);
+    const heading=placard(frame,feature.title,feature.tag,[0,13/3+1.9,0],11.8,feature.id);
+    heading.rotation.y=0;
     protectPhotoFrame(frame,i,j,side);pairedFrames.push(frame);
     frame.traverse(o=>{if(o.isMesh&&o.geometry.type==='PlaneGeometry'){o.userData.feature=feature.id;hitTargets.push(o)}});
   })));

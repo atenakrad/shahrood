@@ -16,12 +16,12 @@ for(let w=0;w<7;w++)for(let pair=0;pair<2;pair++)for(let u of [.01,.15,.25,.49,.
  const progress=w+(pair+u)/2;const pose=samplePhotoJourney(progress,false);
  assert.equal(pose.world,w);assert.equal(pose.pair,pair);
 }
-const list=pairedStops.flat(2);
-assert.equal(list.length,28);
-assert.equal(new Set(list.map(x=>x.photo)).size,28);
+const list=pairedStops.flat(2).filter(Boolean);
+assert.equal(list.length,18);
+assert.equal(new Set(list.map(x=>x.title)).size,list.length);
 for(const [i,f] of list.entries()){
- assert.equal(f.photo,`board-${String(i).padStart(2,'0')}.jpg`);
+
  const sig=fs.readFileSync('./dist/assets/'+f.photo);
  assert.ok(sig.byteLength>30000,'Photo should not be placeholder '+f.photo);
 }
-console.log('PASS photo rendering contract: 28 distinct physical boards, transparent-on-top objects, unmodified asynchronous texture references, 14 pairs');
+console.log('PASS photo rendering contract: 18 distinct titled boards, transparent-on-top objects, unmodified asynchronous texture references, 14 pairs');

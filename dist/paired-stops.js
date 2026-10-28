@@ -13,7 +13,13 @@ const groups=[
 // The original version reused 12 JPGs across 28 physical billboards. Every
 // mounted board now owns a different image, with its own subject-specific art.
 // Sequential indices match BOARD-IMAGE-MANIFEST.json (world, pair, side).
+const seenTitles=new Set();
+const hiddenBoards=new Set(['parking']);
 export const pairedStops=groups.map((pairs,world)=>pairs.map((pair,pairIndex)=>pair.map((id,side)=>{
+ if(hiddenBoards.has(id))return null;
+ const feature=lookup.get(id);
+ if(seenTitles.has(feature.title))return null;
+ seenTitles.add(feature.title);
  const index=world*4+pairIndex*2+side;
  const photo=`board-${String(index).padStart(2,'0')}.jpg`;
  return {...lookup.get(id),photo,caption:'تصویر ترکیبی مفهومی، ویژه این ایستگاه · طرح شاهرود+'};
