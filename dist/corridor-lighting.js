@@ -35,7 +35,8 @@ export function createCorridorLighting(scene,{compact=false,chapters=7}={}){
   // Intensity-only fades keep all pool lights in the renderer and avoid
   // recompiling every stone/water material as lights enter and leave range.
   let initialized=false;
-  function update(camera,delta=1/60){
+  function update(camera,delta=1/60,nightAmount=0){
+    const night=THREE.MathUtils.clamp(nightAmount,0,1);
     const blend=initialized?1-Math.exp(-Math.min(Math.max(delta,0),.1)*8):1;
     const nearLanterns=anchors.lanterns.map((position,id)=>({position,id,distance:position.distanceToSquared(camera.position)}))
       .sort((a,b)=>a.distance-b.distance).slice(0,lanternCount);
@@ -44,7 +45,7 @@ export function createCorridorLighting(scene,{compact=false,chapters=7}={}){
       if(!source){light.intensity=0;return;}
       if(initialized&&light.userData.sourceId!==source.id)light.intensity=0;
       light.userData.sourceId=source.id;light.position.copy(source.position);
-      light.intensity=THREE.MathUtils.lerp(light.intensity,46,blend);
+      light.intensity=THREE.MathUtils.lerp(light.intensity,THREE.MathUtils.lerp(46,72,night),blend);
     });
     const nearPortals=anchors.portals.map((position,id)=>({position,id,distance:Math.abs(position.z-camera.position.z)}))
       .sort((a,b)=>a.distance-b.distance).slice(0,portalCount);
@@ -55,10 +56,10 @@ export function createCorridorLighting(scene,{compact=false,chapters=7}={}){
       down.userData.sourceId=source.id;
       down.position.set(0,18.5,source.position.z);
       down.target.position.set(0,.08,source.position.z);down.target.updateMatrixWorld();
-      down.intensity=THREE.MathUtils.lerp(down.intensity,2100,blend);
+      down.intensity=THREE.MathUtils.lerp(down.intensity,THREE.MathUtils.lerp(2100,2850,night),blend);
       sides.forEach((light,index)=>{
         light.position.set(index===0?-10:10,11,source.position.z);
-        light.intensity=THREE.MathUtils.lerp(light.intensity,115,blend);
+        light.intensity=THREE.MathUtils.lerp(light.intensity,THREE.MathUtils.lerp(115,160,night),blend);
       });
     });
     initialized=true;

@@ -1,4 +1,5 @@
 import {createLanternKit} from './lanterns.js';
+import {createJourneyAtmosphere,nightAmountForProgress} from './journey-atmosphere.js';
 import {createCorridorLighting} from './corridor-lighting.js';
 import {PORTAL_LOCAL_Z} from './corridor-layout.js';
 import {createPersianArchKit} from './persian-arches.js';
@@ -237,6 +238,8 @@ export function createScene(canvas,onFeature,onPair){
   // Portal placement is centralized; extra boundary gates previously overlapped.
   const dustGeo=new THREE.BufferGeometry(),dustPos=[];for(let i=0;i<140;i++)dustPos.push((rand(i+671)-.5)*100,rand(i+372)*22,-rand(i+71)*100);dustGeo.setAttribute('position',new THREE.Float32BufferAttribute(dustPos,3));const dust=new THREE.Points(dustGeo,new THREE.PointsMaterial({color:0xd7dec3,size:.06,transparent:true,opacity:.33,depthWrite:false}));scene.add(dust);
   const palette=[0xe8cba6,0xe3c5a3,0xd9c5ac,0xe1c6a7,0xe7caab,0xddb99b,0xd7c5ad].map(v=>new THREE.Color(v));
+  const atmosphere=createJourneyAtmosphere({scene,renderer,sun,hemi,fill,daySky:skyTexture});
+  const dayFog=new THREE.Color();
   function resize(){renderer.setPixelRatio(Math.min(devicePixelRatio,narrow()?1.15:1.6));renderer.setSize(innerWidth,innerHeight);pairedFrames.forEach(f=>{f.position.x=f.userData.side*(narrow()?7:18);f.scale.setScalar(narrow()?.65:1)});camera.aspect=innerWidth/innerHeight;camera.fov=narrow()?78:61;camera.updateProjectionMatrix();}
   resize();addEventListener('resize',resize);addEventListener('pointermove',e=>pointer.set(e.clientX/innerWidth-.5,e.clientY/innerHeight-.5),{passive:true});
   function click(e){if(e.target.closest('button,a,input,select,dialog'))return;ray.setFromCamera(new THREE.Vector2(e.clientX/innerWidth*2-1,-e.clientY/innerHeight*2+1),camera);const hit=ray.intersectObjects(hitTargets)[0];if(hit)onFeature?.(hit.object.userData.feature);}
@@ -250,7 +253,8 @@ export function createScene(canvas,onFeature,onPair){
     const pose=samplePhotoJourney(p,narrow());
     const pairKey=pose.world+':'+pose.pair;if(pairKey!==lastPairKey){lastPairKey=pairKey;onPair?.(p);}
     camera.position.fromArray(pose.position);look.fromArray(pose.target);
-    corridorLighting.update(camera,elapsed/1000);
+    const atmosphereProgress=p;
+    corridorLighting.update(camera,elapsed/1000,nightAmountForProgress(atmosphereProgress));
     smoothedPointer.lerp(pointer,1-Math.exp(-elapsed*.007));
     if(!reduced){look.x+=smoothedPointer.x*.16;look.y-=smoothedPointer.y*.08;}
     previousRotation.copy(camera.quaternion);camera.lookAt(look);desiredRotation.copy(camera.quaternion);
@@ -258,9 +262,9 @@ export function createScene(canvas,onFeature,onPair){
     document.body.dataset.photoFocus=pose.focus;canvas.dataset.focus=pose.focus;canvas.dataset.pair=String(pose.pair);canvas.dataset.phase=pose.phase.toFixed(3);
 
     const idx=Math.min(6,Math.floor(p)),mix=p-idx;
-    // Keep the supplied photographic sky fixed while atmospheric fog transitions
-    // subtly between districts. Background is a Texture, not a Color.
-    scene.fog.color.copy(palette[idx]).lerp(palette[Math.min(6,idx+1)],THREE.MathUtils.smoothstep(mix,.75,1));
+    // Night starts at the cemetery exhibit, using the same progress as the camera.
+    dayFog.copy(palette[idx]).lerp(palette[Math.min(6,idx+1)],THREE.MathUtils.smoothstep(mix,.75,1));
+    canvas.dataset.nightAmount=atmosphere.update(atmosphereProgress,dayFog).toFixed(3);
     groups.forEach(g=>g.visible=Math.abs(g.position.z-camera.position.z)<180);addDesert.update(camera);addForest.update(camera);dust.position.z=camera.position.z-12;sun.position.set(camera.position.x-30,60,camera.position.z+25);sun.target.position.set(0,0,camera.position.z-45);clearPhotoSightlines(pairedFrames,camera,pose,canvas);clock+=reduced?0:elapsed/1000;moving.forEach(m=>m.object.position.copy(m.curve.getPoint(((clock*.07+m.offset)%1+1)%1)));renderer.render(scene,camera);
     canvas.dataset.camera=camera.position.toArray().map(v=>v.toFixed(2)).join(',');canvas.dataset.journey=p.toFixed(3);canvas.dataset.world=worlds[idx].id;
   }
