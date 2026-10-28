@@ -1,0 +1,29 @@
+/* Keep the promenade visually clean: descriptions appear only at a focused board. */
+body.paired-journey:not(.webgl-fallback) .chapter .chapter-inner {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+body.paired-journey:not(.webgl-fallback) .paired-photo-info {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+body.paired-journey:not(.webgl-fallback)[data-photo-focus="right"] .paired-photo-info.right,
+body.paired-journey:not(.webgl-fallback)[data-photo-focus="left"] .paired-photo-info.left {
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+}
+/* Nothing else should print a chapter title on the path itself. */
+body.paired-journey:not(.webgl-fallback) .scene-callout,
+body.paired-journey:not(.webgl-fallback) .ambient-label {display:none !important}
+
+@media (max-width:700px) {
+  body.paired-journey:not(.webgl-fallback)[data-photo-focus="right"] .paired-photo-info.right,
+  body.paired-journey:not(.webgl-fallback)[data-photo-focus="left"] .paired-photo-info.left {
+    width: min(88vw,430px);
+    max-height: 36dvh;
+    overflow-y: auto;
+  }
+}

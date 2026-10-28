@@ -1,0 +1,13 @@
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+import {pairedStops} from './dist/paired-stops.js';
+const js=fs.readFileSync('./dist/photo-clearance.js','utf8');
+assert.match(js,/object\.material\.transparent=true/,'Transparent render pass must be last for board meshes');
+assert.match(js,/object\.material\.depthTest=false/);
+assert.match(js,/object\.renderOrder=BOARD_RENDER_BASE/);
+assert.match(js,/intersection\(a\.rect,b\.rect\)/,'Overlapping boards must be culled');
+const photos=pairedStops.flat(2).map(f=>f.photo);
+assert.equal(photos.length,28);
+assert.equal(new Set(photos).size,photos.length,'No repeated board images allowed');
+for(const photo of photos)assert.ok(fs.existsSync('./dist/assets/'+photo),photo);
+console.log('PASS: 28 unique image files; late transparent rendering; inter-board collision guard');

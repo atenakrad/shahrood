@@ -1,0 +1,10 @@
+import {readFileSync,writeFileSync} from 'node:fs';
+let s=readFileSync('dist/immersive.js','utf8');
+s=s.replace('createScene(canvas,onFeature)','createScene(canvas,onFeature,onPair)');
+const a=s.indexOf('  function trees('),b=s.indexOf('  function lamps(',a);if(a>=0&&b>a)s=s.slice(0,a)+s.slice(b);
+s=s.replace('let clock=0;','let clock=0,lastPairKey="";');
+s=s.replace('camera.position.copy(route.getPoint(t));',`const pairKey=Math.floor(p)+':'+(p%1>.46?1:0);if(pairKey!==lastPairKey){lastPairKey=pairKey;onPair?.(p);}camera.position.copy(route.getPoint(t));`);
+s=s.replace('14+rand(i+35)*13','35+rand(i+35)*13').replace('[22+i*3,rand(i)*3+2,-47-i*3]','[37+i*3,rand(i)*3+2,-47-i*3]');
+s=s.replace('t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=',`t.colorSpace=THREE.SRGBColorSpace;const imageAspect=t.image.width/t.image.height,targetAspect=width/h;if(imageAspect>targetAspect){t.repeat.x=targetAspect/imageAspect;t.offset.x=(1-t.repeat.x)/2}else{t.repeat.y=imageAspect/targetAspect;t.offset.y=(1-t.repeat.y)/2}t.anisotropy=`);
+writeFileSync('dist/immersive.js',s);
+let app=readFileSync('dist/app.js','utf8');app=app.replace('createScene($(\'#world\'),showFeature)','createScene($(\'#world\'),showFeature,renderPhotoCaptions)').replace('scene?.setJourney(spatial);renderPhotoCaptions(spatial);','scene?.setJourney(spatial);if(!scene)renderPhotoCaptions(spatial);');writeFileSync('dist/app.js',app);

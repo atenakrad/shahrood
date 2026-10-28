@@ -1,0 +1,8 @@
+
+/* Final content pass: prevent UI overlay collisions without changing 3D geometry */
+html { overflow-x: clip; }
+#app, main { min-width: 0; }
+.photo-caption, .photo-focus-caption, [class*="caption"], [class*="panel"] { overflow-wrap: anywhere; }
+@media (max-width: 760px) {
+  [class*="caption"] { max-width: min(90vw, 38rem); }
+}

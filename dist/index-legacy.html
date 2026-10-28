@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101b1a"><meta name="description" content="سفری تعاملی در چشم‌انداز شهر هوشمند شاهرود؛ کشف خدمات، طبیعت، گردشگری و اقتصاد محلی در یک تجربه سه‌بعدی.">
+  <title>شاهرود فردا — سفر به شهر متصل</title>
+  <link rel="preload" href="assets/vazirmatn-regular.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/abr.jpg" as="image">
+  <link rel="stylesheet" href="style.css"><link rel="stylesheet" href="paired.css"><link rel="stylesheet" href="photo-sequence.css"><link rel="stylesheet" href="photo-clearance.css">
+  <script src="vendor/d3.min.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#journey">رفتن به محتوای سفر</a>
+<div class="landscape" aria-hidden="true"><div class="photo-layer active" style="background-image:url('assets/abr.jpg')"></div><div class="photo-layer"></div><div class="photo-shade"></div><div class="grain"></div></div>
+<canvas id="world" aria-hidden="true"></canvas>
+<div class="ambient-label" aria-hidden="true"><span class="cross">＋</span><span id="scene-label">SH A H R O O D / 36° 25′ N</span><span class="fine-line"></span></div>
+<header>
+  <a href="#arrival" class="brand" aria-label="شاهرود فردا، ابتدای سفر"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M4 29 15 10l6 11 5-7 10 15M4 29h32M15 10v19M21 21v8M26 14v15"/></svg><span>شاهرود<span class="brand-sub">روایتی از فردا</span></span></a>
+  <nav aria-label="ناوبری اصلی"><a href="#citizen">دنیاهای شهر</a><a href="#roadmap">مسیر اجرا</a><button id="open-library">امکانات طرح <span>↗</span></button></nav>
+  <button class="atlas-toggle" id="open-atlas"><span class="four-dot">⠿</span> نقشه سفر</button>
+</header>
+<main id="journey"></main>
+<section id="roadmap" class="roadmap" aria-labelledby="roadmap-heading">
+  <div class="roadmap-top"><div><p class="eyebrow">از چشم‌انداز تا اجرا</p><h2 id="roadmap-heading">آینده، <em>قدم‌به‌قدم.</em></h2></div><p>شروع کوچک و قابل سنجش.<br>توسعه هر مرحله، وابسته به نتیجه مرحله قبل.</p></div>
+  <div class="phase-track" role="tablist" aria-label="مراحل اجرای پیشنهادی"></div>
+  <div id="phase-detail" role="tabpanel"></div>
+  <div class="closing"><span class="eyebrow">یک دعوت برای ساختن</span><h2>شهر متصل،<br>با <em>مردمش</em> ساخته می‌شود.</h2><p>پیشنهاد آغاز: چند خدمت پرتکرار، یک یا دو محدوده شهری<br>و یک مسیر پاسخ‌گویی واقعی.</p><button class="primary" id="closing-library">کاوش همه امکانات <span>↗</span></button></div>
+  <footer><div><b>شاهرود فردا</b><p>روایت تعاملی پیشنهادنامه شهر هوشمند شاهرود</p></div><div><span>نمایش مفهومی · خدمات پیشنهادی</span><p>زمان‌بندی‌ها پیشنهادی‌اند؛ بودجه و اهداف کمی نیازمند امکان‌سنجی‌اند.</p></div><button class="text-button" id="open-credits">منابع تصاویر و درباره پروژه ↗</button></footer>
+</section>
+<aside class="chapter-rail" aria-label="فصل‌های سفر"></aside>
+<div class="journey-hud"><div class="hud-place"><span class="live-dot"></span><span id="place-name">جنگل ابر · شاهرود</span></div><button id="motion-toggle" aria-pressed="false" aria-label="کاهش حرکت انیمیشن‌ها">حرکت آرام <span>◌</span></button><span class="hud-number"><b id="chapter-no">۰۰</b><i>/</i>۰۶</span></div>
+<div class="scroll-progress" aria-hidden="true"><div></div></div>
+<dialog id="atlas" class="atlas-dialog"><div class="dialog-bar"><div><span class="eyebrow">مسیر کشف شاهرود</span><h2>کدام دنیا را می‌خواهید ببینید؟</h2></div><button class="close" aria-label="بستن نقشه سفر">×</button></div><div class="atlas-grid"></div><p class="dialog-note">با اسکرول بین دنیاها سفر کنید یا یک مقصد را انتخاب کنید.</p></dialog>
+<dialog id="library" class="library-dialog"><div class="dialog-bar"><div><span class="eyebrow">سکوی پیشنهادی شاهرود من</span><h2>یک شهر؛ امکانات به‌هم‌پیوسته.</h2></div><button class="close" aria-label="بستن فهرست امکانات">×</button></div><div class="library-tools"><label class="search-wrap"><span>⌕</span><input id="feature-search" type="search" placeholder="جست‌وجوی خدمت، گردشگری، درخت…" aria-label="جست‌وجوی امکانات"></label><select id="world-filter" aria-label="فیلتر دنیا"><option value="all">همه دنیاها</option></select></div><p id="result-count" class="dialog-note" aria-live="polite"></p><div class="feature-list"></div><p class="dialog-note">۱۸ بسته خدماتی + نظام اعتبار شهروندی · بر اساس پیشنهادنامه ارائه‌شده</p></dialog>
+<dialog id="detail" class="detail-dialog"><div class="detail-top"><span id="detail-category" class="eyebrow"></span><button class="close" aria-label="بستن توضیحات">×</button></div><div id="detail-content"></div></dialog>
+<dialog id="credits" class="credits-dialog"><div class="dialog-bar"><h2>درباره این سفر</h2><button class="close" aria-label="بستن منابع">×</button></div><p>این وب‌سایت، روایتی مفهومی از پیشنهادنامه جامع شهر هوشمند شاهرود است. نمایش مسیرها، شبکه‌ها و عناصر سه‌بعدی، تصویرسازی توضیحی است و نقشه دقیق یا داده زنده شهر محسوب نمی‌شود. عکس‌های دوبعدی در یک محیط سه‌بعدی نمایش داده شده‌اند؛ تصاویر، پانورامای ۳۶۰ نیستند.</p><h3>عکس‌های واقعی شاهرود و پیرامون</h3><ul id="photo-credits"></ul><p>عکس‌ها برای نمایش وب بهینه شده‌اند؛ قاب‌بندی و رنگ نمایش ممکن است تغییر کند. نسخه‌های برگرفته از تصاویر دارای مجوز اشتراک همانند، تحت همان مجوز ارائه می‌شوند.</p><p>توسعه با Three.js و D3.js · قلم وزیرمتن · تصاویر Wikimedia Commons</p><h3>مبنای محتوا</h3><p>پیشنهادنامه راهبردی و اجرایی شاهرود هوشمند، پاییز ۱۴۰۵؛ ۱۴ بخش و دو پیوست. قابلیت‌ها، فازها و شروط اجرا از همین سند اقتباس شده‌اند. این تجربه، سامانه عملیاتی شهرداری نیست.</p></dialog>
+<noscript><div class="noscript">برای تجربه تعاملی، جاوااسکریپت مرورگر را فعال کنید. این پروژه خدمات، طبیعت، گردشگری و اقتصاد محلی را در چشم‌انداز شهر هوشمند شاهرود معرفی می‌کند.</div></noscript>
+<script type="module" src="app.js"></script>
+</body></html>
